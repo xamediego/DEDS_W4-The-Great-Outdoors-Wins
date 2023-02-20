@@ -3,7 +3,6 @@ package mai.datastructs;
 
 import mai.exceptions.UnderflowException;
 
-//reversed linked list?
 public class Stapel<T> {
 
     private static class Node<T> {
@@ -12,6 +11,7 @@ public class Stapel<T> {
     }
 
     private Node<T> top;
+    private int size;
 
     public boolean isEmpty() {
         return top == null;
@@ -24,6 +24,7 @@ public class Stapel<T> {
         newVal.prev = top;
 
         top = newVal;
+        size++;
 
         return newVal.value;
     }
@@ -35,6 +36,7 @@ public class Stapel<T> {
 
         T value = top.value;
         top = top.prev;
+        size--;
 
         return value;
     }
@@ -47,4 +49,7 @@ public class Stapel<T> {
         return top.value;
     }
 
+    public int getSize(){
+        return size;
+    }
 }

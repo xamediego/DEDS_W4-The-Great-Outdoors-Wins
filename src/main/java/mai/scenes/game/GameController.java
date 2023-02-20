@@ -17,19 +17,18 @@ import javafx.scene.shape.Circle;
 import mai.JFXApplication;
 import mai.data.Player;
 import mai.datastructs.Stapel;
+import mai.exceptions.UnderflowException;
 import mai.scenes.gameover.GameOverScene;
 import mai.enums.MatchOverType;
 
 import java.net.URL;
-import java.util.Objects;
 import java.util.Random;
 import java.util.ResourceBundle;
 
 public class GameController implements Initializable {
 
     // ----- Board Interface -----
-
-    private final int xGroote, yGroote, spaceSize;
+    private final int spaceSize, xGroote, yGroote;
 
     @FXML
     private HBox GameBoardContainer;
@@ -38,7 +37,7 @@ public class GameController implements Initializable {
     private VBox bordColumnBox;
 
     private HBox[] bordRows;
-    private Space[][] bord;
+    GameBoard gameBoard;
 
     private Stapel<Space[][]> gameGeschiedenis;
 
@@ -101,23 +100,20 @@ public class GameController implements Initializable {
         configPlayer2(player2);
 
         configBoard(xGroote, yGroote, spaceSize);
-        configInitialSpaces(xGroote, yGroote, player1.getPlayerColour(), player2.getPlayerColour());
 
         setInitialTurn();
 
-        gameGeschiedenis.push(bord);
+        gameGeschiedenis.push(gameBoard.getBord());
 
-        makeSelectAble(currentPlayer.getPlayerNumber());
+        setSelectAble(currentPlayer.getPlayerNumber());
     }
 
     private boolean checkGameConditions() {
-
-        for (int y = 0; y < yGroote; y++) {
-            for (int x = 0; x < xGroote; x++) {
-                if (!bord[x][y].isTaken()) return false;
+        for (int y = 0; y < gameBoard.yGroote; y++) {
+            for (int x = 0; x < gameBoard.xGroote; x++) {
+                if (!gameBoard.getBord()[x][y].isTaken()) return false;
             }
         }
-
         return true;
     }
 
@@ -135,31 +131,38 @@ public class GameController implements Initializable {
 
             turnNumber++;
 
-            gameGeschiedenis.push(bord);
+            gameGeschiedenis.push(gameBoard.getBord());
 
             setTurnGlow(currentPlayer.getPlayerNumber());
             setCurrentPlayer(currentPlayer.getPlayerName(), currentPlayer.getPlayerNumber());
-            makeSelectAble(currentPlayer.getPlayerNumber());
+            setSelectAble(currentPlayer.getPlayerNumber());
         }
     }
 
     // ----- make the tiles for the current player selectable -----
 
-    private void makeSelectAble(int playerNumber) {
-        for (int y = 0; y < yGroote; y++) {
-            for (int x = 0; x < xGroote; x++) {
-                if (bord[x][y].getPlayerNumber() == playerNumber) {
-                    bordRows[y].getChildren().get(x).getStyleClass().add("spaceSelect");
-                    bordRows[y].getChildren().get(x).setOnMouseClicked(showPossible());
-                }
+    private void setSelectAble(int playerNumber) {
+
+        Stapel<Space> selectAbles = gameBoard.getPlayerSpaces(playerNumber);
+        int size = selectAbles.getSize();
+        for (int i = 0; i < size; i++) {
+            try {
+                makeSelectAble(selectAbles.pop());
+            } catch (UnderflowException e) {
+                e.printStackTrace();
             }
         }
     }
 
+    private void makeSelectAble(Space space){
+        bordRows[space.y].getChildren().get(space.x).getStyleClass().add("spaceSelect");
+        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(showPossible());
+    }
+
     private void removeSelectAble(int playerNumber) {
-        for (int y = 0; y < yGroote; y++) {
-            for (int x = 0; x < xGroote; x++) {
-                if (bord[x][y].getPlayerNumber() == playerNumber)
+        for (int y = 0; y < gameBoard.yGroote; y++) {
+            for (int x = 0; x < gameBoard.xGroote; x++) {
+                if (gameBoard.getBord()[x][y].getPlayerNumber() == playerNumber)
                     bordRows[y].getChildren().get(x).getStyleClass().clear();
                 bordRows[y].getChildren().get(x).setOnMouseClicked(null);
             }
@@ -174,108 +177,85 @@ public class GameController implements Initializable {
     private EventHandler<? super MouseEvent> showPossible() {
         return (EventHandler<MouseEvent>) event -> {
             SpaceBox space = (SpaceBox) event.getSource();
-
-
             if (selected != null && (selected.y == space.y && selected.x == space.x)) {
                 space.getStyleClass().clear();
-
-                deselectPrevPossible(new Space(space.x, space.y));
-
+                deselectSelectAble(new Space(space.x, space.y));
                 selected = null;
             } else {
-                if (selected != null) deselectPrevPossible(selected);
+                if (selected != null) deselectSelectAble(selected);
 
                 space.getStyleClass().add("spaceSelected");
                 selectedSpaceBox = space;
 
                 selected = new Space(space.x, space.y);
 
-                //add block possibility?
-                for (int y = space.y - 2; y < space.y + 3; y++) {
-                    if (y >= 0 && y < yGroote) {
-                        for (int x = space.x - 2; x < space.x + 3; x++) {
-                            if (x >= 0 && x < xGroote) {
-                                if (!bord[x][y].isTaken()) {
-                                    int xDif, yDif;
+                AttackVectors attackVectors = gameBoard.getPossibleAttackDiagonal(new Vector2D(space.x, space.y), 3, 2);
 
-                                    if (space.x > x) {
-                                        xDif = space.x - x;
-                                    } else {
-                                        xDif = x - space.x;
-                                    }
-
-                                    if (space.y > y) {
-                                        yDif = space.y - y;
-                                    } else {
-                                        yDif = y - space.y;
-                                    }
-
-                                    if (xDif < 2 && yDif < 2) {
-                                        SpaceBox spaceBox = (SpaceBox) bordRows[y].getChildren().get(x);
-                                        spaceBox.getStyleClass().add("copySelect");
-                                        spaceBox.setOnMouseClicked(oneSpaceAttack());
-                                    } else {
-                                        SpaceBox spaceBox = (SpaceBox) bordRows[y].getChildren().get(x);
-                                        spaceBox.getStyleClass().add("farSelect");
-                                        spaceBox.setOnMouseClicked(twoSpaceAttack(selectedSpaceBox));
-                                    }
-
-                                    // ----- diagonaal -----
-                                /*
-                                if (xDif + yDif < 3) {
-                                    if (xDif + yDif == 1) {
-                                        SpaceBox spaceBox = (SpaceBox) bordRows[y].getChildren().get(x);
-                                        spaceBox.getStyleClass().add("copySelect");
-                                        spaceBox.setOnMouseClicked(oneSpaceAttack());
-                                    } else if (xDif + yDif == 2) {
-                                        SpaceBox spaceBox = (SpaceBox) bordRows[y].getChildren().get(x);
-                                        spaceBox.getStyleClass().add("farSelect");
-                                        spaceBox.setOnMouseClicked(twoSpaceAttack(selectedSpaceBox));
-                                    }
-                                }
-                                */
-                                }
-                            }
-                        }
-                    }
-                }
+                showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors().getSize(), attackVectors.possibleOneRangeAttackVectors());
+                showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors().getSize(), attackVectors.possibleTwoRangeAttackVectors(), space);
             }
-
         };
     }
 
-    private void deselectPrevPossible(Space selectedSpace) {
-
-        selectedSpaceBox.getStyleClass().clear();
-        selectedSpaceBox.getStyleClass().add("spaceSelect");
-
-        for (int y = selectedSpace.y - 2; y < selectedSpace.y + 3; y++) {
-            if (y >= 0 && y < yGroote) {
-                for (int x = selectedSpace.x - 2; x < selectedSpace.x + 3; x++) {
-                    if (x >= 0 && x < xGroote) {
-                        if (!bord[x][y].isTaken()) {
-                            bordRows[y].getChildren().get(x).getStyleClass().clear();
-                            bordRows[y].getChildren().get(x).setOnMouseClicked(null);
-                        }
-                    }
-                }
+    private void showShortRangeAttack(int size, Stapel<Space> attackVectors) {
+        for (int i = 0; i < size; i++) {
+            try {
+                showPossibleBlock(attackVectors.pop(), "copySelect", shortRangeAttack());
+            } catch (UnderflowException e) {
+                e.printStackTrace();
             }
         }
     }
+
+    private void showLongRangeAttack(int size, Stapel<Space> attackVectors, SpaceBox origin) {
+        for (int i = 0; i < size; i++) {
+            try {
+                showPossibleBlock(attackVectors.pop(), "farSelect", longRangeAttack(origin));
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void showPossibleBlock(Space space, String classStyle, EventHandler<? super MouseEvent> mouseEvent) {
+        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(mouseEvent);
+        bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
+        bordRows[space.y].getChildren().get(space.x).getStyleClass().add(classStyle);
+    }
+
+    private void deselectSelectAble(Space selectedSpace) {
+        selectedSpaceBox.getStyleClass().clear();
+        selectedSpaceBox.getStyleClass().add("spaceSelect");
+
+        Stapel<Space> deselectAbles = gameBoard.getDeselect(selectedSpace);
+        int size = deselectAbles.getSize();
+
+        for (int i = 0; i < size; i++) {
+            try {
+                deselectBlock(deselectAbles.pop());
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void deselectBlock(Space space){
+        bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
+        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(null);
+    }
     // ----- movement methods -----
 
-    //adds points
-    private EventHandler<? super MouseEvent> oneSpaceAttack() {
+    private EventHandler<? super MouseEvent> shortRangeAttack() {
         return (EventHandler<MouseEvent>) event -> {
             SpaceBox space = (SpaceBox) event.getSource();
 
             space.getStyleClass().clear();
 
-            bord[space.x][space.y].take(currentPlayer.getPlayerNumber());
+            gameBoard.getBord()[space.x][space.y].take(currentPlayer.getPlayerNumber());
 
             setColour(space, currentPlayer.getPlayerColour());
 
-            deselectPrevPossible(selected);
+            deselectSelectAble(selected);
 
             addPoint(currentPlayer.getPlayerNumber());
 
@@ -283,23 +263,21 @@ public class GameController implements Initializable {
         };
     }
 
-    //doesn't add points
-    private EventHandler<? super MouseEvent> twoSpaceAttack(SpaceBox oldSpace) {
-
+    private EventHandler<? super MouseEvent> longRangeAttack(SpaceBox oldSpace) {
         return (EventHandler<MouseEvent>) event -> {
             SpaceBox space = (SpaceBox) event.getSource();
 
             space.getStyleClass().clear();
 
-            bord[space.x][space.y].take(currentPlayer.getPlayerNumber());
+            gameBoard.getBord()[space.x][space.y].take(currentPlayer.getPlayerNumber());
 
-            bord[oldSpace.x][oldSpace.y].deselect();
+            gameBoard.getBord()[oldSpace.x][oldSpace.y].deselect();
 
             setColour(space, currentPlayer.getPlayerColour());
 
             removeColour(oldSpace);
 
-            deselectPrevPossible(selected);
+            deselectSelectAble(selected);
 
             endPlayerTurn();
         };
@@ -363,43 +341,40 @@ public class GameController implements Initializable {
 
     // ----- configuring initial board -----
 
-    //insert bord for config?
-    private void configBoard(int xGroote, int yGroote, int size) {
-
+    private void configBoard(int xGroote, int yGroote, int blockSize) {
         bordRows = new HBox[yGroote];
-
-        bord = new Space[xGroote][yGroote];
-
+        gameBoard = new GameBoard(xGroote, yGroote);
+        gameBoard.setInitialOccupied(2);
         gameGeschiedenis = new Stapel<>();
 
-        for (int y = 0; y < yGroote; y++) {
+        drawBoard(gameBoard, blockSize);
+    }
+
+    private void drawBoard(GameBoard board, int blockSize) {
+        for (int y = 0; y < board.yGroote; y++) {
             HBox row = new HBox();
+            for (int x = 0; x < board.xGroote; x++) {
+                SpaceBox spaceBox = new SpaceBox(x, y, blockSize);
 
-            for (int x = 0; x < xGroote; x++) {
-                SpaceBox spaceBox = new SpaceBox(x, y, size);
                 setBoxBorder(x, y, spaceBox);
+
+                if (board.getBord()[x][y].isTaken()) {
+                    if (board.getBord()[x][y].getPlayerNumber() == 1) {
+                        setColour(spaceBox, player1.getPlayerColour());
+                    } else {
+                        setColour(spaceBox, player2.getPlayerColour());
+                    }
+                }
+
                 row.getChildren().add(spaceBox);
-
-                Space space = getNewSpace(x, y);
-                bord[x][y] = space;
             }
-
             bordRows[y] = row;
         }
 
+        if (!bordColumnBox.getChildren().isEmpty()) bordColumnBox.getChildren().clear();
+
         bordColumnBox.getChildren().addAll(bordRows);
     }
-
-    private Space getNewSpace(int x, int y) {
-        if (x == 0 && (y == 5 || y == 6)) return new Space(x, y, true, 1);
-        if (x == 1 && (y == 5 || y == 6)) return new Space(x, y, true, 1);
-
-        if (y == 0 && (x == 5 || x == 6)) return new Space(x, y, true, 2);
-        if (y == 1 && (x == 5 || x == 6)) return new Space(x, y, true, 2);
-
-        return new Space(x, y);
-    }
-
 
     private void setBoxBorder(int x, int y, Node space) {
         if (xGroote - 1 != x && y != 0) {
@@ -414,31 +389,6 @@ public class GameController implements Initializable {
             space.setStyle(
                     "-fx-border-width: 2 0 0 0;\n" +
                             "-fx-border-color: #242526;");
-        }
-    }
-
-    // ----- configuring initial player spaces -----
-
-    // TODO: 19/02/2023 Find way to make background color look nicer
-    private void configInitialSpaces(int xGroote, int yGroote, String color1, String color2) {
-        //player1
-        for (int y = yGroote - 2; y <= yGroote - 1; y++) {
-            for (int x = 0; x <= 1; x++) {
-                SpaceBox spaceBox = (SpaceBox) bordRows[y].getChildren().get(x);
-                setColour(spaceBox, color1);
-
-                bord[x][y].take(1);
-            }
-        }
-
-        //player2
-        for (int y = 0; y <= 1; y++) {
-            for (int x = xGroote - 2; x <= xGroote - 1; x++) {
-                SpaceBox spaceBox = (SpaceBox) bordRows[y].getChildren().get(x);
-                setColour(spaceBox, color2);
-
-                bord[x][y].take(2);
-            }
         }
     }
 
@@ -575,7 +525,7 @@ class SpaceBox extends HBox {
     }
 }
 
-class Space{
+class Space {
     public int x, y;
 
     private boolean isTaken;
@@ -584,12 +534,6 @@ class Space{
     public Space(int x, int y) {
         this.x = x;
         this.y = y;
-    }
-
-    public Space(int x, int y, boolean isTaken, int playerNumber) {
-        this(x, y);
-        this.isTaken = isTaken;
-        this.playerNumber = playerNumber;
     }
 
     public boolean isTaken() {
