@@ -146,6 +146,11 @@
     -fx-background-radius: 8;
 }
 
+.choice-box:hover {
+    -fx-opacity: 0.8;
+    -fx-cursor: hand;
+}
+
 .choice-box .context-menu {
     -fx-background-color: #2f3137;
 }
