@@ -1,3 +1,10 @@
 package mai.scenes.game;
 
-public record Vector2D(int x, int y) { }
+public class Vector2D{
+    public final int x,y;
+
+    public Vector2D(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}

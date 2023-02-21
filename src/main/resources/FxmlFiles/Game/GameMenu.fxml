@@ -13,7 +13,7 @@
          <children>
             <HBox alignment="CENTER">
                <children>
-                  <Label text="Game name">
+                  <Label text="The Great Outdoors Wins ">
                      <font>
                         <Font size="24.0" />
                      </font>
