@@ -3,18 +3,23 @@ package mai;
 import com.goxr3plus.fxborderlessscene.borderless.BorderlessScene;
 import com.goxr3plus.fxborderlessscene.borderless.CustomStage;
 import javafx.application.Application;
-import javafx.scene.Scene;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import mai.scenes.titlebar.TitlebarController;
+import mai.enums.FXMLPart;
 import mai.scenes.gamemenu.GameMenuController;
 import mai.scenes.gamemenu.GameMenuScene;
+import mai.scenes.titlebar.TitlebarController;
+import mai.scenes.titlebar.TitlebarScene;
+
+import java.io.IOException;
 
 public class JFXApplication extends Application{
-
     public static GameMenuController gameMenuController;
-    public static TitlebarController titleBarController;
 
     public static Stage mainStage;
     public static BorderlessScene borderlessScene;
@@ -26,28 +31,37 @@ public class JFXApplication extends Application{
     @Override
     public void start(Stage stage) {
         CustomStage customStage = new CustomStage(StageStyle.UNDECORATED);
-
         mainStage = customStage;
 
-        GameMenuScene gameMenuScene = new GameMenuScene();
+        VBox rootBox = new VBox();
 
-        borderlessScene = customStage.craftBorderlessScene(gameMenuScene.getRoot());
+        rootBox.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        rootBox.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        rootBox.setMinSize(800, 950);
+        rootBox.getStylesheets().add("Styling/app.css");
+        rootBox.getStyleClass().add("primaryBackground");
 
-        titleBarController.setBorderlessScene(borderlessScene);
+        borderlessScene = customStage.craftBorderlessScene(rootBox);
 
-        Scene scene = new Scene(gameMenuScene.getRoot());
+        TitlebarScene titlebarScene = new TitlebarScene(new TitlebarController(), FXMLPart.TITLEBAR);
+        titlebarScene.getController().setBorderlessScene(borderlessScene);
+        titlebarScene.getController().init();
+        rootBox.getChildren().add(titlebarScene.getRoot());
+
+        borderlessScene.removeDefaultCSS();
+
+        GameMenuScene gameMenuScene = new GameMenuScene(new GameMenuController(), FXMLPart.MENU);
+        VBox.setVgrow(gameMenuScene.getRoot(), Priority.ALWAYS);
 
         gameMenuController = gameMenuScene.getController();
 
-        stage.setScene(scene);
+        rootBox.getChildren().add(gameMenuScene.getRoot());
 
-        stage.getIcons().add(new Image("Images/app/icon.png"));
-
-        stage.setTitle("Sneed-Cutter");
-
-        stage.setResizable(false);
-
-        stage.show();
+        customStage.setScene(borderlessScene);
+        customStage.getIcons().add(new Image("Images/app/icon.png"));
+        customStage.setTitle("Sneed-Cutter");
+        customStage.setResizable(false);
+        customStage.show();
     }
 
 }

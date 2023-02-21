@@ -8,13 +8,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
 import mai.JFXApplication;
 import mai.data.Player;
+import mai.enums.FXMLPart;
 import mai.enums.MatchOverType;
+import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
+import mai.scenes.test.AbstractController;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class GameOverController implements Initializable {
+public class GameOverController extends AbstractController implements Initializable {
 
     private final Player player1;
     private final Player player2;
@@ -85,7 +89,7 @@ public class GameOverController implements Initializable {
 
     @FXML
     private void returnToMain(){
-        JFXApplication.gameMenuController.setContent(new GameConfigScene(null).getRoot());
+        JFXApplication.gameMenuController.setContent(new GameConfigScene(new GameConfigController(Optional.empty()), FXMLPart.GAMECONFIG).getRoot());
     }
 
 }

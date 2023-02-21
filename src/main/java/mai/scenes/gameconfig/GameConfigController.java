@@ -7,9 +7,14 @@ import javafx.scene.control.Label;
 import mai.JFXApplication;
 import mai.data.Player;
 import mai.data.User;
-import mai.enums.AIType;
-import mai.scenes.gamemenu.GameMenuController;
-import mai.scenes.game.GameScene;
+import mai.enums.DIFFICULTY;
+import mai.enums.FXMLPart;
+import mai.scenes.game.aigame.AIGameController;
+import mai.scenes.game.aigame.AIGameScene;
+import mai.scenes.game.logic.GameBoard;
+import mai.scenes.game.logic.GameData;
+import mai.scenes.game.logic.Space;
+import mai.scenes.test.AbstractController;
 import mai.service.AIService;
 
 import java.net.URL;
@@ -17,13 +22,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class GameConfigController implements Initializable {
+public class GameConfigController extends AbstractController implements Initializable {
 
     @FXML
     public Label gameInfo;
 
     @FXML
-    private ChoiceBox<AIType> aITypes;
+    private ChoiceBox<DIFFICULTY> aITypes;
 
     private final Optional<User> user;
 
@@ -35,7 +40,7 @@ public class GameConfigController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configureChoiceBox();
 
-        if(user.isPresent()){
+        if (user.isPresent()) {
             gameInfo.setText("Game history will be recorded after the match");
         } else {
             gameInfo.setText("No game history will be recorded after the match\nPlease login if you want your game history to be recorded");
@@ -44,17 +49,22 @@ public class GameConfigController implements Initializable {
 
     @FXML
     private void configureChoiceBox() {
-        List<AIType> aiTypes = List.of(AIType.values());
+        List<DIFFICULTY> DIFFICULTIES = List.of(DIFFICULTY.values());
 
-        aITypes.getItems().addAll(aiTypes);
-
+        aITypes.getItems().addAll(DIFFICULTIES);
         aITypes.getSelectionModel().selectFirst();
     }
 
     @FXML
-    private void startGame(){
-        if(user.isPresent()){
-            JFXApplication.gameMenuController.setContent(new GameScene((Player) user.get(), (Player) user.get(), 7,7 , 75).getRoot());
+    private void startGame() {
+        GameBoard gameBoard = new GameBoard(7, 7, new Space[7][7]);
+        gameBoard.configBoard();
+
+        if (user.isPresent()) {
+            GameData gameData = new GameData(4, 4, 1, (Player) user.get(), AIService.getAiPlayer(aITypes.getValue()), gameBoard);
+            AIGameController aiGameController = new AIGameController(gameData, 75);
+
+            JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         } else {
             Player tempUser = new Player();
             tempUser.setPlayerName("Anon");
@@ -62,7 +72,10 @@ public class GameConfigController implements Initializable {
             tempUser.setProfilePictureUrl("/images/app/defaultProfImage.png");
             tempUser.setPlayerNumber(1);
 
-            JFXApplication.gameMenuController.setContent(new GameScene(tempUser, AIService.getAiPlayer(aITypes.getValue()), 7,7 , 75).getRoot());
+            GameData gameData = new GameData(4, 4, 1, tempUser, AIService.getAiPlayer(aITypes.getValue()), gameBoard);
+            AIGameController aiGameController = new AIGameController(gameData, 75);
+
+            JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         }
     }
 }

@@ -1,12 +1,13 @@
 import mai.datastructs.Stapel;
 import mai.exceptions.UnderflowException;
+import mai.scenes.game.logic.GameData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class StapelTest {
 
     @Test
-    void pushTestOnce() throws Exception{
+    void pushTestOnce() throws Exception {
         int value = 1;
 
         Stapel<Integer> stapel = new Stapel<>();
@@ -17,26 +18,42 @@ public class StapelTest {
     }
 
     @Test
-    void pushTestMultiple() throws Exception{
+    void pushTestMultiple() throws Exception {
         int count = 10;
 
         Stapel<Integer> stapel = new Stapel<>();
 
-        for(int i = 1 ;i <= count; i++){
+        for (int i = 1; i <= count; i++) {
             stapel.push(i);
         }
 
         Assertions.assertEquals((int) stapel.peek(), count);
     }
 
-
     @Test
-    void popTest() throws Exception{
+    void pushPopTestMultiple() throws Exception {
         int count = 10;
 
         Stapel<Integer> stapel = new Stapel<>();
 
-        for(int i = 1 ;i <= count; i++){
+        for (int i = 1; i <= count; i++) {
+            stapel.push(i);
+        }
+
+        stapel.pop();
+        stapel.pop();
+
+        Assertions.assertEquals((int) stapel.peek(), count - 2);
+    }
+
+
+    @Test
+    void popTest() throws Exception {
+        int count = 10;
+
+        Stapel<Integer> stapel = new Stapel<>();
+
+        for (int i = 1; i <= count; i++) {
             stapel.push(i);
         }
 
@@ -70,16 +87,16 @@ public class StapelTest {
     }
 
     @Test
-    void popUnderflowTestTwo() throws Exception{
+    void popUnderflowTestTwo() throws Exception {
         int count = 10;
 
         Stapel<Integer> stapel = new Stapel<>();
 
-        for(int i = 1 ;i <= count; i++){
+        for (int i = 1; i <= count; i++) {
             stapel.push(i);
         }
 
-        for(int i = 1 ;i <= count; i++){
+        for (int i = 1; i <= count; i++) {
             stapel.pop();
         }
 
@@ -91,6 +108,43 @@ public class StapelTest {
         Stapel<Integer> stapel = new Stapel<>();
 
         Assertions.assertThrows(UnderflowException.class, stapel::peek);
+    }
+
+    @Test
+    void gameDataStackTest() throws Exception {
+        int count = 10;
+
+        Stapel<GameData> stapel = new Stapel<>();
+        GameData gameData = new GameData(0, 0, 1, null, null, null);
+
+        for (int i = 0; i < count; i++) {
+            stapel.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
+            gameData.increaseTurnNumber();
+        }
+
+        Assertions.assertEquals(count, stapel.peek().getTurnNumber());
+
+        for (int i = gameData.getTurnNumber() - 1; i >= 1; i--) {
+            Assertions.assertEquals(i , stapel.pop().getTurnNumber());
+        }
+
+    }
+
+    @Test
+    void gameDataStackTest2() throws Exception {
+        int count = 10;
+
+        Stapel<GameData> stapel = new Stapel<>();
+        GameData gameData = new GameData(0, 0, 1, null, null, null);
+
+        for (int i = 0; i < count; i++) {
+            stapel.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
+            gameData.increaseTurnNumber();
+        }
+
+        Assertions.assertEquals(count, stapel.peek().getTurnNumber());
+
+
     }
 
 

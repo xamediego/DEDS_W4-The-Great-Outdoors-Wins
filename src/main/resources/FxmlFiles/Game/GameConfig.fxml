@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
@@ -22,7 +23,13 @@
                   <VBox>
                      <children>
                         <Label text="Difficulty" />
-                        <ChoiceBox id="testChoice" fx:id="aITypes" prefHeight="35.0" prefWidth="150.0" />
+                        <ChoiceBox id="testChoice" fx:id="aITypes" prefHeight="35.0" prefWidth="150.0">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                           <padding>
+                              <Insets left="5.0" />
+                           </padding></ChoiceBox>
                      </children>
                   </VBox>
                </children>

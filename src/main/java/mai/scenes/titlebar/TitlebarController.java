@@ -4,30 +4,30 @@ import com.goxr3plus.fxborderlessscene.borderless.BorderlessScene;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import mai.JFXApplication;
+import mai.scenes.test.AbstractController;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class TitlebarController implements Initializable {
+public class TitlebarController extends AbstractController {
 
     @FXML
-    private HBox titleBox;
+    private VBox titleBox;
 
     @FXML
     private FontIcon minMaxIcon;
 
     private BorderlessScene borderlessScene;
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        JFXApplication.titleBarController = this;
-        borderlessScene.setMoveControl(titleBox);
-    }
-
     public void setBorderlessScene(BorderlessScene borderlessScene) {
         this.borderlessScene = borderlessScene;
+    }
+
+    public void init(){
+        borderlessScene.setMoveControl(titleBox);
     }
 
     @FXML
