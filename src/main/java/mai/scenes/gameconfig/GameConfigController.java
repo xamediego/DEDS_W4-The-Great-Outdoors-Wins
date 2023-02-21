@@ -1,13 +1,17 @@
 package mai.scenes.gameconfig;
 
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import mai.JFXApplication;
 import mai.data.Player;
 import mai.data.User;
-import mai.enums.DIFFICULTY;
+import mai.enums.ButtonAudio;
+import mai.enums.Difficulty;
 import mai.enums.FXMLPart;
 import mai.scenes.game.aigame.AIGameController;
 import mai.scenes.game.aigame.AIGameScene;
@@ -16,7 +20,9 @@ import mai.scenes.game.logic.GameData;
 import mai.scenes.game.logic.Space;
 import mai.scenes.test.AbstractController;
 import mai.service.AIService;
+import mai.service.AudioPlayer;
 
+import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +34,10 @@ public class GameConfigController extends AbstractController implements Initiali
     public Label gameInfo;
 
     @FXML
-    private ChoiceBox<DIFFICULTY> aITypes;
+    private ChoiceBox<Difficulty> aITypes;
+
+    @FXML
+    private Button startButton;
 
     private final Optional<User> user;
 
@@ -39,6 +48,7 @@ public class GameConfigController extends AbstractController implements Initiali
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configureChoiceBox();
+        configStartButton();
 
         if (user.isPresent()) {
             gameInfo.setText("Game history will be recorded after the match");
@@ -49,14 +59,19 @@ public class GameConfigController extends AbstractController implements Initiali
 
     @FXML
     private void configureChoiceBox() {
-        List<DIFFICULTY> DIFFICULTIES = List.of(DIFFICULTY.values());
+        List<Difficulty> DIFFICULTIES = List.of(Difficulty.values());
 
         aITypes.getItems().addAll(DIFFICULTIES);
         aITypes.getSelectionModel().selectFirst();
+
+        aITypes.setOnMouseEntered(select());
+        aITypes.setOnMouseClicked(move());
     }
 
     @FXML
     private void startGame() {
+        AudioPlayer.playAudioFile(new File(ButtonAudio.START.getAudio()));
+
         GameBoard gameBoard = new GameBoard(7, 7, new Space[7][7]);
         gameBoard.configBoard();
 
@@ -78,4 +93,18 @@ public class GameConfigController extends AbstractController implements Initiali
             JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         }
     }
+
+    private void configStartButton(){
+        startButton.setOnMouseEntered(select());
+    }
+
+    private EventHandler<? super MouseEvent> select(){
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(new File(ButtonAudio.SELECT.getAudio()));
+    }
+
+    private EventHandler<? super MouseEvent> move(){
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(new File(ButtonAudio.MOVE.getAudio()));
+    }
+
+
 }

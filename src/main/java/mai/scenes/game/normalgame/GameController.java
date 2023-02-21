@@ -26,6 +26,7 @@ import mai.scenes.gameover.GameOverController;
 import mai.scenes.gameover.GameOverScene;
 import mai.scenes.test.AbstractController;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -253,6 +254,7 @@ public class GameController extends AbstractController implements Initializable 
 
     private void showPossibleBlock(Space space, String classStyle, EventHandler<? super MouseEvent> mouseEvent) {
         bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(mouseEvent);
+
         bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
         bordRows[space.y].getChildren().get(space.x).getStyleClass().add(classStyle);
     }

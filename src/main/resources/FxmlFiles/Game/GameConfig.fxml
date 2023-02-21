@@ -16,7 +16,7 @@
                   <VBox>
                      <children>
                         <Label text="New Game!" />
-                        <Button mnemonicParsing="false" onAction="#startGame" prefHeight="35.0" prefWidth="100.0" styleClass="primaryButton" text="Start" />
+                        <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" prefHeight="35.0" prefWidth="100.0" styleClass="primaryButton" text="Start" />
                      </children>
                   </VBox>
                   <VBox HBox.hgrow="ALWAYS" />

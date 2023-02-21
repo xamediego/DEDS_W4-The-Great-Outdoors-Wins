@@ -1,8 +1,15 @@
 import mai.datastructs.Stapel;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.logic.GameData;
+import mai.service.AudioPlayer;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URLConnection;
+import java.util.UUID;
 
 public class StapelTest {
 
@@ -143,9 +150,6 @@ public class StapelTest {
         }
 
         Assertions.assertEquals(count, stapel.peek().getTurnNumber());
-
-
     }
-
 
 }

@@ -2,7 +2,7 @@ package mai.bootstrap;
 
 
 import mai.data.AI;
-import mai.enums.DIFFICULTY;
+import mai.enums.Difficulty;
 import mai.service.AIService;
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,13 +28,13 @@ public class GenerateData {
             AI ai = new AI(FilenameUtils.removeExtension(Objects.requireNonNull(dir.listFiles())[i].getName()), colour, Objects.requireNonNull(dir.listFiles())[i].getAbsolutePath());
 
             if (i == 0) {
-                ai.setAiTypes(new HashSet<>(Set.of(DIFFICULTY.JOURNALIST)));
+                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.JOURNALIST)));
             } else if (i == 1) {
-                ai.setAiTypes(new HashSet<>(Set.of(DIFFICULTY.EASY)));
+                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.EASY)));
             } else if (i == 2) {
-                ai.setAiTypes(new HashSet<>(Set.of(DIFFICULTY.NORMAL)));
+                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.NORMAL)));
             } else {
-                ai.setAiTypes(new HashSet<>(Set.of(DIFFICULTY.values()[random.nextInt(3)])));
+                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.values()[random.nextInt(3)])));
             }
 
             AIService.aiList.add(ai);

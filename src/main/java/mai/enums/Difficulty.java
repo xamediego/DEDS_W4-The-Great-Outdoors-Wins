@@ -1,6 +1,6 @@
 package mai.enums;
 
-public enum DIFFICULTY {
+public enum Difficulty {
     JOURNALIST,
     EASY,
     NORMAL
