@@ -6,9 +6,10 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.input.MouseEvent;
 import mai.JFXApplication;
-import mai.data.Player;
+import mai.audio.MenuAudio;
 import mai.data.User;
 import mai.enums.ButtonAudio;
 import mai.enums.Difficulty;
@@ -70,18 +71,18 @@ public class GameConfigController extends AbstractController implements Initiali
 
     @FXML
     private void startGame() {
-        AudioPlayer.playAudioFile(new File(ButtonAudio.START.getAudio()));
+        AudioPlayer.playAudioFile(MenuAudio.START_AUDIO);
 
         GameBoard gameBoard = new GameBoard(7, 7, new Space[7][7]);
         gameBoard.configBoard();
 
         if (user.isPresent()) {
-            GameData gameData = new GameData(4, 4, 1, (Player) user.get(), AIService.getAiPlayer(aITypes.getValue()), gameBoard);
+            GameData gameData = new GameData(4, 4, 1,  user.get(), AIService.getAiPlayer(aITypes.getValue()), gameBoard);
             AIGameController aiGameController = new AIGameController(gameData, 75);
 
             JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         } else {
-            Player tempUser = new Player();
+            User tempUser = new User();
             tempUser.setPlayerName("Anon");
             tempUser.setPlayerColour("#5ef77f");
             tempUser.setProfilePictureUrl("/images/app/defaultProfImage.png");
@@ -99,11 +100,11 @@ public class GameConfigController extends AbstractController implements Initiali
     }
 
     private EventHandler<? super MouseEvent> select(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(new File(ButtonAudio.SELECT.getAudio()));
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
     }
 
     private EventHandler<? super MouseEvent> move(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(new File(ButtonAudio.MOVE.getAudio()));
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.MOVE_AUDIO);
     }
 
 

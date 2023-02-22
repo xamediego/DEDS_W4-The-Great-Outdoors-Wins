@@ -1,7 +1,6 @@
 package mai.service;
 
 import mai.data.AI;
-import mai.data.Player;
 import mai.enums.Difficulty;
 
 import java.util.ArrayList;
@@ -20,10 +19,8 @@ public class AIService {
         return aiPlayers.get(random.nextInt(aiPlayers.size()));
     }
 
-    public static Player getAiPlayer(Difficulty type) {
-        AI ai = getByDifficulty(type);
-
-        return new Player(2, ai.getPlayerName(), ai.getPlayerColour(), ai.getProfilePictureUrl());
+    public static AI getAiPlayer(Difficulty type) {
+        return getByDifficulty(type);
     }
 
 }

@@ -40,6 +40,6 @@
             </Label>
          </children>
       </VBox>
-      <Button minWidth="100.0" mnemonicParsing="false" onAction="#returnToMain" styleClass="tertiaryMenuButton" text="Return" VBox.vgrow="NEVER" />
+      <Button fx:id="returnButton" minWidth="100.0" mnemonicParsing="false" onAction="#returnToMain" styleClass="tertiaryMenuButton" text="Return" VBox.vgrow="NEVER" />
    </children>
 </fx:root>

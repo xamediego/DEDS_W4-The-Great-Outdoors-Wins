@@ -39,6 +39,7 @@ public class GameBoard {
     private void cornerOne(int size) {
         for (int x = 0; x < size; x++) {
             for (int y = yGroote - size; y < yGroote; y++) {
+                System.out.println("X: " + x + " | Y: " + y + " | P: " + 1);
                 bord[x][y].take(1);
             }
         }
@@ -47,17 +48,34 @@ public class GameBoard {
     private void cornerTwo(int size) {
         for (int x = xGroote - size; x < xGroote; x++) {
             for (int y = 0; y < size; y++) {
+                System.out.println("X: " + x + " | Y: " + y + " | P: " + 2);
                 bord[x][y].take(2);
             }
         }
     }
 
-    public Stapel<Space> getPlayerSpaces(int playerNumber) {
+    public int getPlayerSpaceCount(int playerNumber) {
+        int count = 0;
+        for (int y = 0; y < yGroote; y++) {
+            for (int x = 0; x < xGroote; x++) {
+                if (bord[x][y].getPlayerNumber() == playerNumber) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public Stapel<Space> getPlayerMoves(int playerNumber) {
         Stapel<Space> selectAble = new Stapel<>();
         for (int y = 0; y < yGroote; y++) {
             for (int x = 0; x < xGroote; x++) {
                 if (bord[x][y].getPlayerNumber() == playerNumber) {
-                    selectAble.push(new Space(x, y));
+                    Space select = new Space(x, y, true, playerNumber);
+                    AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2, playerNumber);
+                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() && !attackVectors.possibleTwoRangeAttackVectors().isEmpty()){
+                        selectAble.push(select);
+                    }
                 }
             }
         }
@@ -65,29 +83,70 @@ public class GameBoard {
         return selectAble;
     }
 
-    public AttackVectors getPossibleAttackDiagonal(Vector2D vector2D, int range, int attackDropOff) {
+    public boolean checkBoard(int nextplayer) {
+        System.out.println();
+        System.out.println("NEXT PLAYER: " + nextplayer);
+        System.out.println(checkPossibleAttacks(nextplayer));
+        System.out.println(checkPlayerSquares());
+        System.out.println(isFull());
+        System.out.println();
+        return checkPossibleAttacks(nextplayer) || checkPlayerSquares() || isFull();
+    }
+
+    public boolean checkPossibleAttacks(int nextPlayer){
+        System.out.println("SCORE: " + (getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2)));
+        System.out.println("SCORE: " + (getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2)));
+        return getPlayerMoves(nextPlayer).isEmpty() && getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2);
+    }
+
+    public boolean checkPlayerSquares() {
+        int player1Count = 0;
+        int player2Count = 0;
+
+        for (int y = 0; y < yGroote; y++) {
+            for (int x = 0; x < xGroote; x++) {
+                if (bord[x][y].getPlayerNumber() == 1) {
+                    player1Count++;
+                } else if (bord[x][y].getPlayerNumber() == 2) {
+                    player2Count++;
+                }
+            }
+        }
+        return player1Count == 0 || player2Count == 0;
+    }
+
+    public boolean isFull() {
+        for (int y = 0; y < yGroote; y++) {
+            for (int x = 0; x < xGroote; x++) {
+                if (!bord[x][y].isTaken()) return false;
+
+            }
+        }
+        return true;
+    }
+
+    public AttackVectors getPossibleAttackDiagonal(Space space, int range, int attackDropOff, int playerNumber) {
         Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
         Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
 
-        for (int x = vector2D.x - (range - 1); x < vector2D.x + range; x++) {
-
+        for (int x = space.x - (range - 1); x < space.x + range; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = vector2D.y - (range - 1); y < vector2D.y + range; y++) {
-
+                for (int y = space.y - (range - 1); y < space.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
                         if (!bord[x][y].isTaken()) {
+//                        if (bord[x][y].getPlayerNumber() != playerNumber) {
                             int xDif, yDif;
 
-                            if (vector2D.x > x) {
-                                xDif = vector2D.x - x;
+                            if (space.x > x) {
+                                xDif = space.x - x;
                             } else {
-                                xDif = x - vector2D.x;
+                                xDif = x - space.x;
                             }
 
-                            if (vector2D.y > y) {
-                                yDif = vector2D.y - y;
+                            if (space.y > y) {
+                                yDif = space.y - y;
                             } else {
-                                yDif = y - vector2D.y;
+                                yDif = y - space.y;
                             }
 
                             if (xDif + yDif < range) {
@@ -107,27 +166,60 @@ public class GameBoard {
         return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public AttackVectors getPossibleAttackSquare(Vector2D vector2D, int range, int attackDropOff){
+    public Stapel<Space> getDiagonal(Space space, int range) {
+        Stapel<Space> r = new Stapel<>();
+
+        for (int x = space.x - range - 1; x < space.x + range; x++) {
+            if (x >= 0 && x < xGroote) {
+                for (int y = space.y - range - 1; y < space.y + range; y++) {
+                    if (y >= 0 && y < yGroote) {
+                        int xDif, yDif;
+
+                        if (space.x > x) {
+                            xDif = space.x - x;
+                        } else {
+                            xDif = x - space.x;
+                        }
+
+                        if (space.y > y) {
+                            yDif = space.y - y;
+                        } else {
+                            yDif = y - space.y;
+                        }
+
+                        if (xDif + yDif < range) {
+                            r.push(bord[x][y]);
+                        }
+
+                    }
+                }
+            }
+        }
+        return r;
+    }
+
+    public AttackVectors getPossibleAttackSquare(Space space, int range, int attackDropOff, int playerNumber) {
         Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
         Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
 
-        for (int x = vector2D.x - (range - 1); x < vector2D.x + range; x++) {
+        for (int x = space.x - (range - 1); x < space.x + range; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = vector2D.y - (range - 1); y < vector2D.y + range; y++) {
+                for (int y = space.y - (range - 1); y < space.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
                         if (!bord[x][y].isTaken()) {
+//                        if (bord[x][y].getPlayerNumber() != playerNumber) {
                             int xDif, yDif;
 
-                            if (vector2D.x > x) {
-                                xDif = vector2D.x - x;
+                            if (space.x > x) {
+                                xDif = space.x - x;
                             } else {
-                                xDif = x - vector2D.x;
+                                xDif = x - space.x;
                             }
 
-                            if (vector2D.y > y) {
-                                yDif = vector2D.y - y;
+                            if (space.y > y) {
+                                yDif = space.y - y;
                             } else {
-                                yDif = y - vector2D.y;
+                                yDif = y - space.y;
                             }
 
                             if (xDif < attackDropOff && yDif < attackDropOff) {
@@ -135,6 +227,7 @@ public class GameBoard {
                             } else {
                                 possibleTwoRangeAttackVectors.push(new Space(x, y));
                             }
+
                         }
                     }
                 }
@@ -143,12 +236,27 @@ public class GameBoard {
         return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public Stapel<Space> getDeselect(Space selectedSpace) {
+    public Stapel<Space> getSquare(Space space, int range) {
+        Stapel<Space> r = new Stapel<>();
+
+        for (int x = space.x - 1; x < space.x + 2; x++) {
+            if (x >= 0 && x < xGroote) {
+                for (int y = space.y - 1; y < space.y + 2; y++) {
+                    if (y >= 0 && y < yGroote) {
+                        r.push(bord[x][y]);
+                    }
+                }
+            }
+        }
+        return r;
+    }
+
+    public Stapel<Space> getDeselect(Space selectedSpace, int range) {
         Stapel<Space> deselect = new Stapel<>();
 
-        for (int y = selectedSpace.y - 2; y < selectedSpace.y + 3; y++) {
+        for (int y = selectedSpace.y - range - 1; y < selectedSpace.y + range; y++) {
             if (y >= 0 && y < yGroote) {
-                for (int x = selectedSpace.x - 2; x < selectedSpace.x + 3; x++) {
+                for (int x = selectedSpace.x - range - 1; x < selectedSpace.x + range; x++) {
                     if (x >= 0 && x < xGroote) {
                         if (!bord[x][y].isTaken()) {
                             deselect.push(bord[x][y]);
@@ -157,13 +265,11 @@ public class GameBoard {
                 }
             }
         }
-
         return deselect;
     }
 
     public Space[][] copyBord() {
         Space[][] copy = new Space[xGroote][yGroote];
-
 
         for (int x = 0; x < xGroote; x++) {
             for (int y = 0; y < yGroote; y++) {
@@ -184,7 +290,7 @@ public class GameBoard {
         return copy;
     }
 
-    public void print(){
+    public void print() {
         for (int x = 0; x < xGroote; x++) {
             for (int y = 0; y < yGroote; y++) {
                 if (bord[x][y].isTaken()) {

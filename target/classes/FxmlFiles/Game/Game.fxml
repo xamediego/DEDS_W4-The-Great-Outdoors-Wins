@@ -33,6 +33,7 @@
                                 <Font size="15.0" />
                             </font>
                         </Label>
+                  <Label text="Hoodie" />
                   <Label fx:id="player1Score" text="4" />
                     </children>
                 </VBox>
@@ -96,6 +97,7 @@
                                 <Font size="15.0" />
                             </font>
                         </Label>
+                  <Label text="BaggySweater" />
                   <Label fx:id="player2Score" text="4" />
                     </children>
                 </VBox>

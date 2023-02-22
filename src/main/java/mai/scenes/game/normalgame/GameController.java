@@ -3,7 +3,6 @@ package mai.scenes.game.normalgame;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,7 +14,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import mai.JFXApplication;
-import mai.data.Player;
+import mai.audio.MenuAudio;
+import mai.data.User;
 import mai.datastructs.Stapel;
 import mai.enums.ButtonType;
 import mai.enums.FXMLPart;
@@ -25,8 +25,8 @@ import mai.scenes.game.logic.*;
 import mai.scenes.gameover.GameOverController;
 import mai.scenes.gameover.GameOverScene;
 import mai.scenes.test.AbstractController;
+import mai.service.AudioPlayer;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -37,11 +37,11 @@ public class GameController extends AbstractController implements Initializable 
 
     private final int spaceSize;
     private final Stapel<GameData> gameGeschiedenis;
-    private HBox[] bordRows;
+    public HBox[] bordRows;
 
     //move gameData to stack?
-    private GameData gameData;
-    private GameData oldGameData;
+    public GameData gameData;
+    public GameData oldGameData;
 
     // ----- Board Interface -----
 
@@ -90,6 +90,8 @@ public class GameController extends AbstractController implements Initializable 
     private Circle player2AvatarCircle;
 
     public GameController(GameData gameData, int spaceSize) {
+        System.out.println("P1 N: " + gameData.getPlayer1().getPlayerNumber());
+        System.out.println("P2 N: " + gameData.getPlayer2().getPlayerNumber());
         this.gameData = gameData;
         this.gameGeschiedenis = new Stapel<>();
         this.spaceSize = spaceSize;
@@ -97,27 +99,33 @@ public class GameController extends AbstractController implements Initializable 
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        configButtons();
+
         configPlayer1(gameData.getPlayer1());
         configPlayer2(gameData.getPlayer2());
 
         configBoard(spaceSize);
         setInitialTurn();
 
-        setSelectAble();
-
         setOldGameData();
+    }
+
+    private void configButtons() {
+        gameOverButton.setOnMouseEntered(select());
+        resetTurnButton.setOnMouseEntered(select());
     }
 
     // ----- methods when player ends his move -----
 
-    private void endTurn() {
+    protected void endTurn() {
+        System.out.println("END TURN");
         gameData.increaseTurnNumber();
         gameData.player1Finished = false;
         gameData.player2Finished = false;
 
         addGameHistory(oldGameData);
-        setTurnInfo();
 
+        setTurnInfo();
         setOldGameData();
     }
 
@@ -126,58 +134,55 @@ public class GameController extends AbstractController implements Initializable 
         GameBoard oldGameBoard = new GameBoard(7, 7, bord);
 
         oldGameData = new GameData(gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber(), gameData.getPlayer1(), gameData.getPlayer2(), oldGameBoard);
-
     }
 
-    private void endPlayerMove() {
+    public void endPlayerMove() {
         removeSelectAble(gameData.currentPlayer.getPlayerNumber());
 
-        if (checkGameConditions()) {
+        int oldP;
+
+        if (gameData.currentPlayer.getPlayerNumber() == 1) {
+            gameData.player1Finished = true;
+            gameData.currentPlayer = gameData.getPlayer2();
+
+            oldP = 1;
+        } else {
+            oldP = 2;
+
+            gameData.player2Finished = true;
+            gameData.currentPlayer = gameData.getPlayer1();
+        }
+
+        System.out.println("OLD P: " + oldP);
+
+        if (checkGameConditions(oldP)) {
             endGame();
         } else {
-            if (gameData.currentPlayer.getPlayerNumber() == 1) {
-                gameData.player1Finished = true;
-                gameData.currentPlayer = gameData.getPlayer2();
-            } else {
-                gameData.player2Finished = true;
-                gameData.currentPlayer = gameData.getPlayer1();
-            }
-
             if (gameData.player1Finished && gameData.player2Finished) endTurn();
-
-
             setNewPlayerMove();
         }
     }
 
-    private void setNewPlayerMove() {
+    protected void setNewPlayerMove() {
         setTurnGlow(gameData.currentPlayer.getPlayerNumber());
 
         setCurrentPlayer();
         setSelectAble();
     }
 
-    private boolean checkGameConditions() {
-        for (int y = 0; y < gameData.gameBoard.yGroote; y++) {
-            for (int x = 0; x < gameData.gameBoard.xGroote; x++) {
-                if (!gameData.gameBoard.getBord()[x][y].isTaken()) return false;
-            }
-        }
-        return true;
+    protected boolean checkGameConditions(int nextPlayer) {
+        return gameData.gameBoard.checkBoard(nextPlayer);
     }
 
     private void addGameHistory(GameData data) {
         data.currentPlayer = gameData.currentPlayer;
-
-        System.out.println("ADD TURN: " + data.getTurnNumber() + " | SIZE: " + gameGeschiedenis.getSize());
         gameGeschiedenis.push(data);
-        System.out.println("NEW SIZE: " + gameGeschiedenis.getSize());
     }
 
     // ----- make the tiles for the current player selectable -----
 
     private void setSelectAble() {
-        Stapel<Space> selectAbles = gameData.gameBoard.getPlayerSpaces(gameData.currentPlayer.getPlayerNumber());
+        Stapel<Space> selectAbles = gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber());
 
         int size = selectAbles.getSize();
         for (int i = 0; i < size; i++) {
@@ -194,7 +199,7 @@ public class GameController extends AbstractController implements Initializable 
         bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(showPossible());
     }
 
-    private void removeSelectAble(int playerNumber) {
+    protected void removeSelectAble(int playerNumber) {
         for (int y = 0; y < gameData.gameBoard.yGroote; y++) {
             for (int x = 0; x < gameData.gameBoard.xGroote; x++) {
                 if (gameData.gameBoard.getBord()[x][y].getPlayerNumber() == playerNumber)
@@ -213,18 +218,21 @@ public class GameController extends AbstractController implements Initializable 
         return (EventHandler<MouseEvent>) event -> {
             SpaceBox space = (SpaceBox) event.getSource();
             if (selected != null && (selected.y == space.y && selected.x == space.x)) {
+                AudioPlayer.playAudioFile(MenuAudio.CANCEL_AUDIO);
+
                 space.getStyleClass().clear();
                 deselect(new Space(space.x, space.y));
                 selected = null;
             } else {
                 if (selected != null) deselect(selected);
+                AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
                 space.getStyleClass().add("spaceSelected");
                 selectedSpaceBox = space;
 
                 selected = new Space(space.x, space.y);
 
-                AttackVectors attackVectors = gameData.gameBoard.getPossibleAttackSquare(new Vector2D(space.x, space.y), 3, 2);
+                AttackVectors attackVectors = gameData.gameBoard.getPossibleAttackSquare(new Space(space.x, space.y), 3, 2, gameData.currentPlayer.getPlayerNumber());
 
                 showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors().getSize(), attackVectors.possibleOneRangeAttackVectors());
                 showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors().getSize(), attackVectors.possibleTwoRangeAttackVectors(), space);
@@ -235,7 +243,7 @@ public class GameController extends AbstractController implements Initializable 
     private void showShortRangeAttack(int size, Stapel<Space> attackVectors) {
         for (int i = 0; i < size; i++) {
             try {
-                showPossibleBlock(attackVectors.pop(), ButtonType.SHORTRANGE.getType(), shortRangeAttack());
+                showPossibleBlock(attackVectors.pop(), ButtonType.SHORTRANGE.getType(), shortRangeEventAttack());
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
@@ -245,7 +253,7 @@ public class GameController extends AbstractController implements Initializable 
     private void showLongRangeAttack(int size, Stapel<Space> attackVectors, SpaceBox origin) {
         for (int i = 0; i < size; i++) {
             try {
-                showPossibleBlock(attackVectors.pop(), ButtonType.LONGRANGE.getType(), longRangeAttack(origin));
+                showPossibleBlock(attackVectors.pop(), ButtonType.LONGRANGE.getType(), longRangeAttackEvent(origin));
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
@@ -254,6 +262,7 @@ public class GameController extends AbstractController implements Initializable 
 
     private void showPossibleBlock(Space space, String classStyle, EventHandler<? super MouseEvent> mouseEvent) {
         bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(mouseEvent);
+        bordRows[space.y].getChildren().get(space.x).setOnMouseEntered(move());
 
         bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
         bordRows[space.y].getChildren().get(space.x).getStyleClass().add(classStyle);
@@ -263,7 +272,7 @@ public class GameController extends AbstractController implements Initializable 
         selectedSpaceBox.getStyleClass().clear();
         selectedSpaceBox.getStyleClass().add("spaceSelect");
 
-        Stapel<Space> deselectAbles = gameData.gameBoard.getDeselect(selectedSpace);
+        Stapel<Space> deselectAbles = gameData.gameBoard.getDeselect(selectedSpace, 3);
 
         deselectSelectAble(deselectAbles);
     }
@@ -283,44 +292,98 @@ public class GameController extends AbstractController implements Initializable 
     private void deselectBlock(Space space) {
         bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
         bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(null);
+        bordRows[space.y].getChildren().get(space.x).setOnMouseEntered(null);
     }
+
     // ----- movement methods -----
 
-    private EventHandler<? super MouseEvent> shortRangeAttack() {
+    public EventHandler<? super MouseEvent> shortRangeEventAttack() {
         return (EventHandler<MouseEvent>) event -> {
+            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+
             SpaceBox space = (SpaceBox) event.getSource();
-
-            space.getStyleClass().clear();
-
-            gameData.gameBoard.getBord()[space.x][space.y].take(gameData.currentPlayer.getPlayerNumber());
-
-            setColour(space, gameData.currentPlayer.getPlayerColour());
 
             deselect(selected);
 
-            addPoint();
-
-            endPlayerMove();
+            shortRangeAttack(gameData.gameBoard.getBord()[space.x][space.y]);
         };
     }
 
-    private EventHandler<? super MouseEvent> longRangeAttack(SpaceBox oldSpace) {
+    public void shortRangeAttack(Space select){
+        SpaceBox newSpace = (SpaceBox) bordRows[select.y].getChildren().get(select.x);
+
+        newSpace.getStyleClass().clear();
+
+        Stapel<Space> a = gameData.gameBoard.getSquare(select, 1);
+
+        int size = a.getSize();
+
+        for (int i = 0; i < size; i++) {
+            try {
+                Space t = a.pop();
+                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != gameData.currentPlayer.getPlayerNumber()) {
+                    gameData.gameBoard.getBord()[t.x][t.y].take(gameData.currentPlayer.getPlayerNumber());
+                    setColour((SpaceBox) bordRows[t.y].getChildren().get(t.x), gameData.currentPlayer.getPlayerColour());
+                }
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+
+        gameData.gameBoard.getBord()[select.x][select.y].take(gameData.currentPlayer.getPlayerNumber());
+
+        setColour(newSpace, gameData.currentPlayer.getPlayerColour());
+        setSpaceLabel(gameData.currentPlayer.getPlayerNumber(), newSpace);
+
+        addPoint();
+
+        endPlayerMove();
+    }
+
+    public EventHandler<? super MouseEvent> longRangeAttackEvent(SpaceBox oldSpace) {
         return (EventHandler<MouseEvent>) event -> {
+            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+
             SpaceBox space = (SpaceBox) event.getSource();
 
             space.getStyleClass().clear();
 
-            gameData.gameBoard.getBord()[space.x][space.y].take(gameData.currentPlayer.getPlayerNumber());
-            gameData.gameBoard.getBord()[oldSpace.x][oldSpace.y].deselect();
-
-            setColour(space, gameData.currentPlayer.getPlayerColour());
-
-            removeColour(oldSpace);
-
             deselect(selected);
 
-            endPlayerMove();
+            longRangeAttack(gameData.gameBoard.getBord()[oldSpace.x][oldSpace.y], gameData.gameBoard.getBord()[space.x][space.y]);
         };
+    }
+
+    public void longRangeAttack(Space origin, Space select){
+        SpaceBox oldSpace = (SpaceBox) bordRows[origin.y].getChildren().get(origin.x);
+        SpaceBox newSpace = (SpaceBox) bordRows[select.y].getChildren().get(select.x);
+
+        Stapel<Space> a = gameData.gameBoard.getSquare(select, 1);
+
+        int size = a.getSize();
+
+        for (int i = 0; i < size; i++) {
+            try {
+                Space t = a.pop();
+                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != gameData.currentPlayer.getPlayerNumber()) {
+                    gameData.gameBoard.getBord()[t.x][t.y].take(gameData.currentPlayer.getPlayerNumber());
+                    setColour((SpaceBox) bordRows[t.y].getChildren().get(t.x), gameData.currentPlayer.getPlayerColour());
+                }
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+
+        gameData.gameBoard.getBord()[select.x][select.y].take(gameData.currentPlayer.getPlayerNumber());
+        gameData.gameBoard.getBord()[oldSpace.x][oldSpace.y].deselect();
+
+        setColour(newSpace, gameData.currentPlayer.getPlayerColour());
+        setSpaceLabel(gameData.currentPlayer.getPlayerNumber(), newSpace);
+
+        removeColour(oldSpace);
+        removeSpaceLabel(oldSpace);
+
+        endPlayerMove();
     }
 
     private void addPoint() {
@@ -340,19 +403,19 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- configuring initial user details -----
 
-    private void configPlayer1(Player user) {
+    private void configPlayer1(User user) {
         configAvatar(user, player1Avatar, player1AvatarCircle);
         configLabel(user, player1Label);
     }
 
-    private void configPlayer2(Player user) {
+    private void configPlayer2(User user) {
         configAvatar(user, player2Avatar, player2AvatarCircle);
         configLabel(user, player2Label);
     }
 
     // ----- configuring initial avatars -----
 
-    private void configAvatar(Player user, ImageView avatarView, Circle playerAvatarCircle) {
+    private void configAvatar(User user, ImageView avatarView, Circle playerAvatarCircle) {
         if (user.getProfilePictureUrl() != null) {
             setAvatar(avatarView, new Image(user.getProfilePictureUrl()), playerAvatarCircle, user.getPlayerColour());
         } else {
@@ -374,7 +437,7 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- configuring initial player names -----
 
-    private void configLabel(Player user, Label label) {
+    private void configLabel(User user, Label label) {
         label.setText(user.getPlayerName());
         label.setStyle("-fx-text-fill: " + user.getPlayerColour());
     }
@@ -399,8 +462,10 @@ public class GameController extends AbstractController implements Initializable 
                 if (data.gameBoard.getBord()[x][y].isTaken()) {
                     if (data.gameBoard.getBord()[x][y].getPlayerNumber() == 1) {
                         setColour(spaceBox, data.getPlayer1().getPlayerColour());
+                        setSpaceLabel(1, spaceBox);
                     } else {
                         setColour(spaceBox, data.getPlayer2().getPlayerColour());
+                        setSpaceLabel(2, spaceBox);
                     }
                 }
 
@@ -430,8 +495,18 @@ public class GameController extends AbstractController implements Initializable 
         }
     }
 
-    //expecting the color code to be at index 2 of an string split with postive lookup ';'
-    // TODO: 20/02/2023 fix alpha channel
+    private void setSpaceLabel(int playerNumber, SpaceBox spaceBox) {
+//        if (playerNumber == 1) {
+//            spaceBox.setText("H");
+//        } else {
+//            spaceBox.setText("B");
+//        }
+    }
+
+    private void removeSpaceLabel(SpaceBox spaceBox) {
+//        spaceBox.setText("");
+    }
+
     private void setColour(SpaceBox spaceBox, String color) {
         String style = spaceBox.getStyle();
         String newStyle = "";
@@ -459,7 +534,7 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- configuring initial turn -----
 
-    private void setInitialTurn() {
+    public void setInitialTurn() {
         Random random = new Random();
 
         if (random.nextInt(2) == 0) {
@@ -475,11 +550,11 @@ public class GameController extends AbstractController implements Initializable 
         setTurnInfo();
     }
 
-    private void setTurnInfo() {
+    protected void setTurnInfo() {
         turnInfo.setText("Turn " + gameData.getTurnNumber() + " | ");
     }
 
-    private void setCurrentPlayer() {
+    protected void setCurrentPlayer() {
         currentPlayerLabel.setText(gameData.currentPlayer.getPlayerName());
 
         if (gameData.currentPlayer.getPlayerNumber() == 1) {
@@ -493,7 +568,7 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- set or removes a glow when it's one player's turn or not -----
 
-    private void setTurnGlow(int playerNumber) {
+    protected void setTurnGlow(int playerNumber) {
         if (playerNumber == 1) {
             addTurnGlow(player1Label, player1AvatarCircle);
             removeTurnGlow(player2Label, player2AvatarCircle);
@@ -521,17 +596,15 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private void resetTurn() throws UnderflowException {
         if (!gameGeschiedenis.isEmpty()) {
-            System.out.println("RESET OLD SIZE: " + gameGeschiedenis.getSize());
+            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
-            deselectSelectAble(gameData.gameBoard.getPlayerSpaces(gameData.currentPlayer.getPlayerNumber()));
+            deselectSelectAble(gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber()));
 
             resetTwistedGame(gameGeschiedenis.pop());
         }
     }
 
     private void resetTwistedGame(GameData data) {
-        System.out.println(data.toString());
-
         gameData = data;
         drawBoard(data, 75);
 
@@ -541,11 +614,9 @@ public class GameController extends AbstractController implements Initializable 
         updatePointLabel();
 
         setNewPlayerMove();
-
-        System.out.println("RESET NEW SIZE: " + gameGeschiedenis.getSize());
     }
 
-    private void setResetButtonActive(boolean active) {
+    protected void setResetButtonActive(boolean active) {
         if (!gameGeschiedenis.isEmpty()) {
             resetTurnButton.setVisible(active);
             resetTurnButton.setDisable(!active);
@@ -558,8 +629,9 @@ public class GameController extends AbstractController implements Initializable 
     // ----- event that runs when the game has ended -----
 
     @FXML
-    private void endGame() {
+    protected void endGame() {
         FXMLPart gameOver = FXMLPart.GAMEOVER;
+        AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
         if (gameData.getPlayerOneScore() > gameData.getPlayerTwoScore()) {
             GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P1, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
@@ -573,38 +645,14 @@ public class GameController extends AbstractController implements Initializable 
         }
     }
 
-}
+    // ----- for adding sounds? -----
 
-class SpaceBox extends HBox {
-    public int x, y;
-
-    public SpaceBox(int x, int y, int size) {
-        this.x = x;
-        this.y = y;
-
-        Label spaceLabel = new Label("X: " + x + " | Y: " + y);
-        spaceLabel.setStyle("-fx-text-fill: WHITE");
-
-        Bloom bloom = new Bloom();
-        bloom.setThreshold(.1);
-        spaceLabel.setEffect(bloom);
-
-
-        this.setMinSize(size, size);
-        this.setPrefSize(size, size);
-        this.setMaxSize(size, size);
-
-        this.getChildren().add(spaceLabel);
-
-        this.setAlignment(Pos.CENTER);
+    private EventHandler<? super MouseEvent> select() {
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SpaceBox spaceBox = (SpaceBox) o;
-        return x == spaceBox.x && y == spaceBox.y;
+    private EventHandler<? super MouseEvent> move() {
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
     }
 }
 

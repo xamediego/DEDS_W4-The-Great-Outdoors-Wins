@@ -6,6 +6,8 @@ public class User {
     private String playerColour;
     private String profilePictureUrl;
 
+    private int playerNumber;
+
     public User() {
 
     }
@@ -14,6 +16,18 @@ public class User {
         this.playerName = playerName;
         this.playerColour = playerColour;
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public User(int playerNumber, String playerName, String playerColour, String profilePictureUrl) {
+        this(playerName, playerColour, profilePictureUrl);
+        this.playerNumber = playerNumber;
+    }
+
+    public User(String playerName, String playerColour, String profilePictureUrl, int playerNumber) {
+        this.playerName = playerName;
+        this.playerColour = playerColour;
+        this.profilePictureUrl = profilePictureUrl;
+        this.playerNumber = playerNumber;
     }
 
     public String getPlayerName() {
@@ -38,5 +52,13 @@ public class User {
 
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public int getPlayerNumber() {
+        return playerNumber;
+    }
+
+    public void setPlayerNumber(int playerNumber) {
+        this.playerNumber = playerNumber;
     }
 }

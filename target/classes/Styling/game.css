@@ -40,11 +40,29 @@
     -fx-cursor: hand;
 }
 
+.copySelectTake{
+    -fx-background-color: #b44f4f;
+}
+
+.copySelectTake:hover{
+    -fx-opacity: 0.7;
+    -fx-cursor: hand;
+}
+
 .farSelect{
     -fx-background-color: #1b558a;
 }
 
 .farSelect:hover{
+    -fx-opacity: 0.7;
+    -fx-cursor: hand;
+}
+
+.farSelectTake{
+    -fx-background-color: #8a1b1b;
+}
+
+.farSelectTake:hover{
     -fx-opacity: 0.7;
     -fx-cursor: hand;
 }

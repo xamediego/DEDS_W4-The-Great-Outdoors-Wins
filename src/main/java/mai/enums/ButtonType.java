@@ -14,7 +14,8 @@ public enum ButtonType {
     },
     SELECT {
         public String getType() {
-            return "spaceSelect";}
+            return "spaceSelect";
+        }
     };
 
     public abstract String getType();

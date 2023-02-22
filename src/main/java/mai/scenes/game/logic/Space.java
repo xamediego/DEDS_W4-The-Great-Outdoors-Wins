@@ -11,6 +11,12 @@ public class Space {
         this.y = y;
     }
 
+    public Space(int x, int y, boolean isTaken, int playerNumber) {
+        this(x, y);
+        this.isTaken = isTaken;
+        this.playerNumber = playerNumber;
+    }
+
     public boolean isTaken() {
         return isTaken;
     }

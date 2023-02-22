@@ -1,16 +1,19 @@
 package mai.scenes.game.logic;
 
-import mai.data.Player;
+import mai.data.AI;
+import mai.data.User;
 
 public class GameData {
 
     private int playerOneScore, playerTwoScore;
     private int turnNumber;
 
-    private final Player player1, player2;
+    private final User player1;
+    private final AI player2;
+
     public boolean player1Finished = false, player2Finished = false;
 
-    public Player currentPlayer;
+    public User currentPlayer;
     public GameBoard gameBoard;
 
     /**
@@ -23,7 +26,7 @@ public class GameData {
      * @param player2        data container for player 2
      * @param gameBoard      game board used by this game data
      */
-    public GameData(int playerOneScore, int playerTwoScore, int turnNumber, Player player1, Player player2, GameBoard gameBoard) {
+    public GameData(int playerOneScore, int playerTwoScore, int turnNumber, User player1, AI player2, GameBoard gameBoard) {
         this.playerOneScore = playerOneScore;
         this.playerTwoScore = playerTwoScore;
         this.turnNumber = turnNumber;
@@ -46,11 +49,11 @@ public class GameData {
 
     public void increaseTurnNumber() {this.turnNumber++;}
 
-    public Player getPlayer1() {
+    public User getPlayer1() {
         return player1;
     }
 
-    public Player getPlayer2() {
+    public AI getPlayer2() {
         return player2;
     }
 
