@@ -54,48 +54,11 @@ public class GameBoard {
         }
     }
 
-    public int getPlayerSpaceCount(int playerNumber) {
-        int count = 0;
-        for (int y = 0; y < yGroote; y++) {
-            for (int x = 0; x < xGroote; x++) {
-                if (bord[x][y].getPlayerNumber() == playerNumber) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    public Stapel<Space> getPlayerMoves(int playerNumber) {
-        Stapel<Space> selectAble = new Stapel<>();
-        for (int y = 0; y < yGroote; y++) {
-            for (int x = 0; x < xGroote; x++) {
-                if (bord[x][y].getPlayerNumber() == playerNumber) {
-                    Space select = new Space(x, y, true, playerNumber);
-                    AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2, playerNumber);
-                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() && !attackVectors.possibleTwoRangeAttackVectors().isEmpty()){
-                        selectAble.push(select);
-                    }
-                }
-            }
-        }
-
-        return selectAble;
-    }
-
     public boolean checkBoard(int nextplayer) {
-        System.out.println();
-        System.out.println("NEXT PLAYER: " + nextplayer);
-        System.out.println(checkPossibleAttacks(nextplayer));
-        System.out.println(checkPlayerSquares());
-        System.out.println(isFull());
-        System.out.println();
         return checkPossibleAttacks(nextplayer) || checkPlayerSquares() || isFull();
     }
 
     public boolean checkPossibleAttacks(int nextPlayer){
-        System.out.println("SCORE: " + (getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2)));
-        System.out.println("SCORE: " + (getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2)));
         return getPlayerMoves(nextPlayer).isEmpty() && getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2);
     }
 
@@ -112,6 +75,7 @@ public class GameBoard {
                 }
             }
         }
+
         return player1Count == 0 || player2Count == 0;
     }
 
@@ -124,6 +88,54 @@ public class GameBoard {
         }
         return true;
     }
+
+    public int getPlayerSpaceCount(int playerNumber) {
+        int count = 0;
+        for (int y = 0; y < yGroote; y++) {
+            for (int x = 0; x < xGroote; x++) {
+                if (bord[x][y].getPlayerNumber() == playerNumber) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public Stapel<Space> getPlayerMoves(int playerNumber) {
+        Stapel<Space> selectAble = new Stapel<>();
+        for (int y = 0; y < yGroote; y++) {
+            for (int x = 0; x < xGroote; x++) {
+
+                if (bord[x][y].getPlayerNumber() == playerNumber) {
+                    Space select = new Space(x, y, true, playerNumber);
+                    AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2, playerNumber);
+                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() || !attackVectors.possibleTwoRangeAttackVectors().isEmpty()){
+                        selectAble.push(select);
+                    }
+
+                }
+            }
+        }
+        return selectAble;
+    }
+
+    public Stapel<Space> getDeselect(Space selectedSpace, int range) {
+        Stapel<Space> deselect = new Stapel<>();
+
+        for (int y = selectedSpace.y - range - 1; y < selectedSpace.y + range; y++) {
+            if (y >= 0 && y < yGroote) {
+                for (int x = selectedSpace.x - range - 1; x < selectedSpace.x + range; x++) {
+                    if (x >= 0 && x < xGroote) {
+                        if (!bord[x][y].isTaken()) {
+                            deselect.push(bord[x][y]);
+                        }
+                    }
+                }
+            }
+        }
+        return deselect;
+    }
+
 
     public AttackVectors getPossibleAttackDiagonal(Space space, int range, int attackDropOff, int playerNumber) {
         Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
@@ -249,23 +261,6 @@ public class GameBoard {
             }
         }
         return r;
-    }
-
-    public Stapel<Space> getDeselect(Space selectedSpace, int range) {
-        Stapel<Space> deselect = new Stapel<>();
-
-        for (int y = selectedSpace.y - range - 1; y < selectedSpace.y + range; y++) {
-            if (y >= 0 && y < yGroote) {
-                for (int x = selectedSpace.x - range - 1; x < selectedSpace.x + range; x++) {
-                    if (x >= 0 && x < xGroote) {
-                        if (!bord[x][y].isTaken()) {
-                            deselect.push(bord[x][y]);
-                        }
-                    }
-                }
-            }
-        }
-        return deselect;
     }
 
     public Space[][] copyBord() {

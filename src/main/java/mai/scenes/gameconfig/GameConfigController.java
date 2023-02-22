@@ -77,7 +77,7 @@ public class GameConfigController extends AbstractController implements Initiali
         gameBoard.configBoard();
 
         if (user.isPresent()) {
-            GameData gameData = new GameData(4, 4, 1,  user.get(), AIService.getAiPlayer(aITypes.getValue()), gameBoard);
+            GameData gameData = new GameData(4, 4, 1,  user.get(), AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
             AIGameController aiGameController = new AIGameController(gameData, 75);
 
             JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
@@ -88,7 +88,7 @@ public class GameConfigController extends AbstractController implements Initiali
             tempUser.setProfilePictureUrl("/images/app/defaultProfImage.png");
             tempUser.setPlayerNumber(1);
 
-            GameData gameData = new GameData(4, 4, 1, tempUser, AIService.getAiPlayer(aITypes.getValue()), gameBoard);
+            GameData gameData = new GameData(4, 4, 1, tempUser, AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
             AIGameController aiGameController = new AIGameController(gameData, 75);
 
             JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());

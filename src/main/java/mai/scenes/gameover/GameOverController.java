@@ -14,11 +14,13 @@ import mai.audio.MenuAudio;
 import mai.data.User;
 import mai.enums.FXMLPart;
 import mai.enums.MatchOverType;
+import mai.enums.Sound;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
 import mai.scenes.test.AbstractController;
 import mai.service.AudioPlayer;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -63,14 +65,14 @@ public class GameOverController extends AbstractController implements Initializa
 //            AudioPlayer.playAudioFile(new File(Sound.WIN.getAudio()));
             setWinner(player1, String.valueOf(player1Score), "Has won with a score of:");
         } else if(matchOverType.equals(MatchOverType.P2)){
-//            AudioPlayer.playAudioFile(new File(Sound.LOST.getAudio()));
+            AudioPlayer.playAudioFile(new File(Sound.LOST.getAudio()));
             setWinner(player2, String.valueOf(player2Score), "Has won with a score of:");
         } else {
-//            AudioPlayer.playAudioFile(new File(Sound.DRAW.getAudio()));
+            AudioPlayer.playAudioFile(new File(Sound.LOST.getAudio()));
             User tempUser = new User();
             tempUser.setPlayerColour("WHITE");
             tempUser.setPlayerName("GOD WON");
-            tempUser.setProfilePictureUrl("https://i.warosu.org/data/jp/img/0101/78/1354881517355.png");
+            tempUser.setProfilePictureUrl("Images/App/Thierry.png");
             setWinner(tempUser,"" ,"Draw, you both lost");
         }
     }

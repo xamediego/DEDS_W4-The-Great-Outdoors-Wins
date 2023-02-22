@@ -26,11 +26,13 @@ public class Space {
     }
 
     public void take(int playerNumber) {
+        System.out.println("X: " + x + " | Y: " + y + " | P: " + playerNumber + " | TAKE");
         isTaken = true;
         this.playerNumber = playerNumber;
     }
 
     public void deselect() {
+        System.out.println("X: " + x + " | Y: " + y + " | P: " + playerNumber + " | DESELECT");
         isTaken = false;
         this.playerNumber = 0;
     }

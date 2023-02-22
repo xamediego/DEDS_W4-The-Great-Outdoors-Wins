@@ -75,7 +75,7 @@
                               <FontIcon iconColor="WHITE" iconLiteral="fas-redo" />
                            </graphic>
                         </Button>
-                        <Button fx:id="gameOverButton" mnemonicParsing="false" onAction="#endGame" styleClass="tertiaryCancelButton" text="End Game" />
+                        <Button fx:id="gameOverButton" mnemonicParsing="false" onAction="#endGameEvent" styleClass="tertiaryCancelButton" text="End Game" />
                      </children>
                   </HBox>
                </children>

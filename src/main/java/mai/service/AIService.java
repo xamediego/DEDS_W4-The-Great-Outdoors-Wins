@@ -19,8 +19,11 @@ public class AIService {
         return aiPlayers.get(random.nextInt(aiPlayers.size()));
     }
 
-    public static AI getAiPlayer(Difficulty type) {
-        return getByDifficulty(type);
+    public static AI getAiPlayer(Difficulty type, int pNumber) {
+        AI ai = getByDifficulty(type);
+        ai.setPlayerNumber(pNumber);
+
+        return ai;
     }
 
 }

@@ -34,9 +34,12 @@ public class AILogic {
 
         AttackVectors attackVectors = gameController.gameData.gameBoard.getPossibleAttackSquare(select, 3, 2, 2);
 
-        if (attackVectors.possibleTwoRangeAttackVectors().isEmpty()) {
+        System.out.println("SIZE L ST: " + attackVectors.possibleTwoRangeAttackVectors().getSize());
+        System.out.println("SIZE S ST: " + attackVectors.possibleOneRangeAttackVectors().getSize());
+
+        if (attackVectors.possibleTwoRangeAttackVectors().getSize() < 1) {
             attackRandomShort(gameController, attackVectors.possibleOneRangeAttackVectors());
-        } else if (attackVectors.possibleOneRangeAttackVectors().isEmpty()) {
+        } else if (attackVectors.possibleOneRangeAttackVectors().getSize() < 1) {
             attackRandomLong(gameController, attackVectors.possibleTwoRangeAttackVectors(), select);
         }
 
@@ -59,6 +62,7 @@ public class AILogic {
 
     private void attackRandomLong(GameController gameController, Stapel<Space> attackVectors, Space origin) throws UnderflowException {
         int size = attackVectors.getSize();
+        System.out.println("SIZE S: " + size);
 
         Space select = attackVectors.peek();
 
@@ -71,6 +75,7 @@ public class AILogic {
 
     private void attackRandomShort(GameController gameController, Stapel<Space> attackVectors) throws UnderflowException {
         int size = attackVectors.getSize();
+        System.out.println("SIZE L: " + size);
 
         Space select = attackVectors.peek();
 

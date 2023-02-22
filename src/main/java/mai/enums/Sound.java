@@ -4,20 +4,14 @@ public enum Sound {
 
     LOST{
         public String getAudio(){
-            return "src/main/resources/Sounds/Lost.wav";
+            return "src/main/resources/Sounds/S_LOST.wav";
         }
     },
-    WIN{
+    SUMMON{
         public String getAudio(){
-            return "src/main/resources/Sounds/Win.wav";
-        }
-    },
-    DRAW{
-        public String getAudio(){
-            return "src/main/resources/Sounds/Draw.wav";
+            return "src/main/resources/Sounds/S_SUMMON.wav";
         }
     };
-
     public abstract String getAudio();
 
 }

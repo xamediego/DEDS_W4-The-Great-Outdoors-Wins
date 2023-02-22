@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class AIGameController extends GameController {
 
-    private AILogic aiLogic = new AILogic();
+    private final AILogic aiLogic = new AILogic();
 
     public AIGameController(GameData gameData, int spaceSize) {
         super(gameData, spaceSize);
@@ -35,10 +35,9 @@ public class AIGameController extends GameController {
 //        }
 //
 //        if (checkGameConditions(oldP)) {
-//            endGame();
+//            endGame(oldP);
 //        } else {
 //            if (gameData.player1Finished && gameData.player2Finished) endTurn();
-//
 //
 //            if (newP == 2) {
 //                setNewAIMove();
