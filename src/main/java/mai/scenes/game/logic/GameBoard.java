@@ -39,7 +39,6 @@ public class GameBoard {
     private void cornerOne(int size) {
         for (int x = 0; x < size; x++) {
             for (int y = yGroote - size; y < yGroote; y++) {
-                System.out.println("X: " + x + " | Y: " + y + " | P: " + 1);
                 bord[x][y].take(1);
             }
         }
@@ -48,7 +47,6 @@ public class GameBoard {
     private void cornerTwo(int size) {
         for (int x = xGroote - size; x < xGroote; x++) {
             for (int y = 0; y < size; y++) {
-                System.out.println("X: " + x + " | Y: " + y + " | P: " + 2);
                 bord[x][y].take(2);
             }
         }
@@ -58,8 +56,17 @@ public class GameBoard {
         return checkPossibleAttacks(nextplayer) || checkPlayerSquares() || isFull();
     }
 
-    public boolean checkPossibleAttacks(int nextPlayer){
-        return getPlayerMoves(nextPlayer).isEmpty() && getPlayerSpaceCount(nextPlayer) < (xGroote * yGroote / 2);
+    public boolean checkPossibleAttacks(int nextPlayer) {
+        boolean r = getPlayerMoves(nextPlayer).isEmpty();
+
+        if (r) {
+            return checkScore(nextPlayer);
+        }
+        return r;
+    }
+
+    public boolean checkScore(int nextPlayer) {
+        return getPlayerSpaceCount(nextPlayer) > ((xGroote * yGroote) / 2);
     }
 
     public boolean checkPlayerSquares() {
@@ -109,7 +116,7 @@ public class GameBoard {
                 if (bord[x][y].getPlayerNumber() == playerNumber) {
                     Space select = new Space(x, y, true, playerNumber);
                     AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2, playerNumber);
-                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() || !attackVectors.possibleTwoRangeAttackVectors().isEmpty()){
+                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() || !attackVectors.possibleTwoRangeAttackVectors().isEmpty()) {
                         selectAble.push(select);
                     }
 

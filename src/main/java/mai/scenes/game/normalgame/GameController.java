@@ -267,7 +267,6 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     private void deselect(Space selectedSpace) {
-        System.out.println("X: " + selectedSpace.x + " | Y: " + selectedSpace.y + " | P: " + gameData.currentPlayer.getPlayerNumber() + " | DESELECT");
         selectedSpaceBox.getStyleClass().clear();
         selectedSpaceBox.getStyleClass().add("spaceSelect");
 
@@ -313,29 +312,12 @@ public class GameController extends AbstractController implements Initializable 
 
         newSpace.getStyleClass().clear();
 
-        Stapel<Space> a = gameData.gameBoard.getSquare(select, 1);
-
-        int size = a.getSize();
-
-        for (int i = 0; i < size; i++) {
-            try {
-                Space t = a.pop();
-                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != gameData.currentPlayer.getPlayerNumber()) {
-                    gameData.gameBoard.getBord()[t.x][t.y].take(gameData.currentPlayer.getPlayerNumber());
-                    setColour((SpaceBox) bordRows[t.y].getChildren().get(t.x), gameData.currentPlayer.getPlayerColour());
-                    setSpaceLabel(gameData.currentPlayer.getPlayerNumber() , (SpaceBox) bordRows[t.y].getChildren().get(t.x));
-                }
-            } catch (UnderflowException e) {
-                e.printStackTrace();
-            }
-        }
+        setInfected(select);
 
         gameData.gameBoard.getBord()[select.x][select.y].take(gameData.currentPlayer.getPlayerNumber());
 
         setColour(newSpace, gameData.currentPlayer.getPlayerColour());
         setSpaceLabel(gameData.currentPlayer.getPlayerNumber(), newSpace);
-
-        addPoint();
 
         endPlayerMove();
     }
@@ -358,22 +340,10 @@ public class GameController extends AbstractController implements Initializable 
         SpaceBox oldSpace = (SpaceBox) bordRows[origin.y].getChildren().get(origin.x);
         SpaceBox newSpace = (SpaceBox) bordRows[select.y].getChildren().get(select.x);
 
-        Stapel<Space> a = gameData.gameBoard.getSquare(select, 1);
+        removeColour((SpaceBox) bordRows[origin.y].getChildren().get(origin.x));
+        gameData.gameBoard.getBord()[origin.x][origin.y].deselect();
 
-        int size = a.getSize();
-
-        for (int i = 0; i < size; i++) {
-            try {
-                Space t = a.pop();
-                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != gameData.currentPlayer.getPlayerNumber()) {
-                    gameData.gameBoard.getBord()[t.x][t.y].take(gameData.currentPlayer.getPlayerNumber());
-                    setColour((SpaceBox) bordRows[t.y].getChildren().get(t.x), gameData.currentPlayer.getPlayerColour());
-                    setSpaceLabel(gameData.currentPlayer.getPlayerNumber() , (SpaceBox) bordRows[t.y].getChildren().get(t.x));
-                }
-            } catch (UnderflowException e) {
-                e.printStackTrace();
-            }
-        }
+        setInfected(select);
 
         gameData.gameBoard.getBord()[select.x][select.y].take(gameData.currentPlayer.getPlayerNumber());
         gameData.gameBoard.getBord()[oldSpace.x][oldSpace.y].deselect();
@@ -387,11 +357,46 @@ public class GameController extends AbstractController implements Initializable 
         endPlayerMove();
     }
 
-    private void addPoint() {
+    private void setInfected(Space select){
+        Stapel<Space> a = gameData.gameBoard.getSquare(select, 1);
+
+        int size = a.getSize();
+
+        for (int i = 0; i < size; i++) {
+            try {
+                Space t = a.pop();
+                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != gameData.currentPlayer.getPlayerNumber()) {
+                    addPoint(1);
+                    removePoint(1);
+                    gameData.gameBoard.getBord()[t.x][t.y].take(gameData.currentPlayer.getPlayerNumber());
+                    setColour((SpaceBox) bordRows[t.y].getChildren().get(t.x), gameData.currentPlayer.getPlayerColour());
+                    setSpaceLabel(gameData.currentPlayer.getPlayerNumber() , (SpaceBox) bordRows[t.y].getChildren().get(t.x));
+                } else if(t.getPlayerNumber() != 0){
+                    addPoint(1);
+                }
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void addPoint(int points) {
+        System.out.println("ADD P");
         if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            gameData.increasePlayerOneScore(1);
+            gameData.increasePlayerOneScore(points);
         } else {
-            gameData.increasePlayerTwoScore(1);
+            gameData.increasePlayerTwoScore(points);
+        }
+
+        updatePointLabel();
+    }
+
+    private void removePoint(int points) {
+        System.out.println("REMOVE P");
+        if (gameData.currentPlayer.getPlayerNumber() == 1) {
+            gameData.decreasePlayerTwoScore(points);
+        } else {
+            gameData.decreasePlayerOneScore(points);
         }
 
         updatePointLabel();
@@ -493,6 +498,10 @@ public class GameController extends AbstractController implements Initializable 
             space.setStyle(
                     "-fx-border-width: 2 0 0 0;\n" +
                             "-fx-border-color: #242526;");
+        } else {
+            space.setStyle(
+                    "-fx-border-width: 0 0 0 0;\n" +
+                            "-fx-border-color: #242526;");
         }
     }
 
@@ -509,7 +518,6 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     private void setColour(SpaceBox spaceBox, String color) {
-        System.out.println("X: " + spaceBox.x + " | Y: " + spaceBox.y + " |  | COLOR");
         String style = spaceBox.getStyle();
         String newStyle = "";
 

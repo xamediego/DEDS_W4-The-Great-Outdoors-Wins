@@ -62,7 +62,7 @@ public class AILogic {
 
     private void attackRandomLong(GameController gameController, Stapel<Space> attackVectors, Space origin) throws UnderflowException {
         int size = attackVectors.getSize();
-        System.out.println("SIZE S: " + size);
+        System.out.println("SIZE L: " + size);
 
         Space select = attackVectors.peek();
 
@@ -75,7 +75,7 @@ public class AILogic {
 
     private void attackRandomShort(GameController gameController, Stapel<Space> attackVectors) throws UnderflowException {
         int size = attackVectors.getSize();
-        System.out.println("SIZE L: " + size);
+        System.out.println("SIZE S: " + size);
 
         Space select = attackVectors.peek();
 

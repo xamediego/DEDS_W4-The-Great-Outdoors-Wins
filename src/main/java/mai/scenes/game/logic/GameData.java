@@ -65,6 +65,14 @@ public class GameData {
         playerTwoScore += score;
     }
 
+    public void decreasePlayerOneScore(int score) {
+        playerOneScore -= score;
+    }
+
+    public void decreasePlayerTwoScore(int score) {
+        playerTwoScore -= score;
+    }
+
     @Override
     public String toString() {
         return "GameData{" +

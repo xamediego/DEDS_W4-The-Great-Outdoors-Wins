@@ -1,6 +1,8 @@
 import mai.datastructs.Stapel;
 import mai.exceptions.UnderflowException;
+import mai.scenes.game.logic.GameBoard;
 import mai.scenes.game.logic.GameData;
+import mai.scenes.game.logic.Space;
 import mai.service.AudioPlayer;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Assertions;
@@ -151,5 +153,34 @@ public class StapelTest {
 
         Assertions.assertEquals(count, stapel.peek().getTurnNumber());
     }
+
+    @Test
+    void gameEndRulesTest(){
+        GameBoard gameBoard = new GameBoard(7,7, new Space[7][7]);
+
+        for (int y = 0; y < 7; y++) {
+
+            for(int x = 0;x < 3; x++){
+                gameBoard.getBord()[x][y] = new Space(x, y, true, 1);
+            }
+
+            for(int x = 3;x < 7; x++){
+                gameBoard.getBord()[x][y] = new Space(x, y, true, 2);
+            }
+
+        }
+
+        Assertions.assertTrue(gameBoard.isFull());
+
+        Assertions.assertFalse(gameBoard.checkPossibleAttacks(1));
+        Assertions.assertTrue(gameBoard.checkPossibleAttacks(2));
+
+        Assertions.assertFalse(gameBoard.checkScore(1));
+        Assertions.assertTrue(gameBoard.checkScore(2));
+
+        Assertions.assertTrue(gameBoard.checkBoard(1));
+        Assertions.assertTrue(gameBoard.checkBoard(2));
+    }
+
 
 }
