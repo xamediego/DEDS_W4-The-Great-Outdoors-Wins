@@ -5,6 +5,7 @@ import mai.datastructs.Stapel;
 import mai.enums.Difficulty;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.logic.AttackVectors;
+import mai.scenes.game.logic.GameBoard;
 import mai.scenes.game.logic.Space;
 import mai.scenes.game.normalgame.GameController;
 
@@ -12,41 +13,41 @@ import java.util.Random;
 
 public class AILogic {
 
-    public void makeMove(GameController gameController, AI aiPlayer) throws UnderflowException {
-        Stapel<Space> selectAble = gameController.gameData.gameBoard.getPlayerMoves(2);
+    public AIMove makeMove(GameBoard gameBoard, AI aiPlayer) throws UnderflowException {
+        Stapel<Space> selectAble = gameBoard.getPlayerMoves(2);
 
         if (aiPlayer.getAiTypes().contains(Difficulty.NORMAL)) {
-            makeRandomMove(selectAble, gameController);
-        } else if(aiPlayer.getAiTypes().contains(Difficulty.EASY)){
-            makeRandomMove(selectAble, gameController);
+            return makeRandomMove(selectAble, gameBoard);
+        } else if (aiPlayer.getAiTypes().contains(Difficulty.EASY)) {
+            return makeRandomMove(selectAble, gameBoard);
         } else {
-            makeRandomMove(selectAble, gameController);
+            return makeRandomMove(selectAble, gameBoard);
         }
 
     }
 
-    private void makeRandomMove(Stapel<Space> selectAble, GameController gameController) throws UnderflowException {
+    private AIMove makeRandomMove(Stapel<Space> selectAble, GameBoard gameBoard) throws UnderflowException {
         Random random = new Random();
 
         int size = selectAble.getSize();
 
         Space select = getAttackSpace(selectAble, size);
 
-        AttackVectors attackVectors = gameController.gameData.gameBoard.getPossibleAttackSquare(select, 3, 2, 2);
+        AttackVectors attackVectors = gameBoard.getPossibleAttackSquare(select, 3, 2, 2);
 
         System.out.println("SIZE L ST: " + attackVectors.possibleTwoRangeAttackVectors().getSize());
         System.out.println("SIZE S ST: " + attackVectors.possibleOneRangeAttackVectors().getSize());
 
         if (attackVectors.possibleTwoRangeAttackVectors().getSize() < 1) {
-            attackRandomShort(gameController, attackVectors.possibleOneRangeAttackVectors());
+            return attackRandomShort(attackVectors.possibleOneRangeAttackVectors(), select);
         } else if (attackVectors.possibleOneRangeAttackVectors().getSize() < 1) {
-            attackRandomLong(gameController, attackVectors.possibleTwoRangeAttackVectors(), select);
+            return attackRandomLong(attackVectors.possibleTwoRangeAttackVectors(), select);
         }
 
         if (random.nextInt(2) == 0) {
-            attackRandomShort(gameController, attackVectors.possibleOneRangeAttackVectors());
+            return attackRandomShort(attackVectors.possibleOneRangeAttackVectors(), select);
         } else {
-            attackRandomLong(gameController, attackVectors.possibleTwoRangeAttackVectors(), select);
+            return attackRandomLong(attackVectors.possibleTwoRangeAttackVectors(), select);
         }
     }
 
@@ -60,9 +61,8 @@ public class AILogic {
         return select;
     }
 
-    private void attackRandomLong(GameController gameController, Stapel<Space> attackVectors, Space origin) throws UnderflowException {
+    private AIMove attackRandomLong(Stapel<Space> attackVectors, Space origin) throws UnderflowException {
         int size = attackVectors.getSize();
-        System.out.println("SIZE L: " + size);
 
         Space select = attackVectors.peek();
 
@@ -70,12 +70,11 @@ public class AILogic {
             select = attackVectors.pop();
         }
 
-        gameController.longRangeAttack(origin, select);
+        return new AIMove(origin, select);
     }
 
-    private void attackRandomShort(GameController gameController, Stapel<Space> attackVectors) throws UnderflowException {
+    private AIMove attackRandomShort(Stapel<Space> attackVectors, Space origin) throws UnderflowException {
         int size = attackVectors.getSize();
-        System.out.println("SIZE S: " + size);
 
         Space select = attackVectors.peek();
 
@@ -83,7 +82,7 @@ public class AILogic {
             select = attackVectors.pop();
         }
 
-        gameController.shortRangeAttack(select);
+        return new AIMove(origin, select);
     }
 
 }

@@ -72,7 +72,13 @@ public class AIGameController extends GameController {
 
             setCurrentPlayer();
 
-            aiLogic.makeMove(this, gameData.getPlayer2());
+            AIMove aiMove = aiLogic.makeMove(this.gameData.gameBoard, gameData.getPlayer2());
+
+//            if(this.gameData.gameBoard.getDis(aiMove.getOrigin().x, aiMove.getSelected().x) + (this.gameData.gameBoard.getDis(aiMove.getOrigin().x, aiMove.getSelected().x) < 2){
+//
+//            } else {
+//
+//            }
         } catch (UnderflowException e) {
             e.printStackTrace();
         }

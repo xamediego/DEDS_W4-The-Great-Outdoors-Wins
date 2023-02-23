@@ -1,6 +1,7 @@
 package mai.scenes.game.logic;
 
 import mai.datastructs.Stapel;
+import mai.exceptions.UnderflowException;
 
 public class GameBoard {
 
@@ -156,17 +157,20 @@ public class GameBoard {
 //                        if (bord[x][y].getPlayerNumber() != playerNumber) {
                             int xDif, yDif;
 
-                            if (space.x > x) {
-                                xDif = space.x - x;
-                            } else {
-                                xDif = x - space.x;
-                            }
+                            xDif = getDis(space.x, x);
+                            yDif = getDis(space.y, y);
 
-                            if (space.y > y) {
-                                yDif = space.y - y;
-                            } else {
-                                yDif = y - space.y;
-                            }
+//                            if (space.x > x) {
+//                                xDif = space.x - x;
+//                            } else {
+//                                xDif = x - space.x;
+//                            }
+//
+//                            if (space.y > y) {
+//                                yDif = space.y - y;
+//                            } else {
+//                                yDif = y - space.y;
+//                            }
 
                             if (xDif + yDif < range) {
                                 if (xDif + yDif < attackDropOff) {
@@ -194,17 +198,20 @@ public class GameBoard {
                     if (y >= 0 && y < yGroote) {
                         int xDif, yDif;
 
-                        if (space.x > x) {
-                            xDif = space.x - x;
-                        } else {
-                            xDif = x - space.x;
-                        }
+                        xDif = getDis(space.x, x);
+                        yDif = getDis(space.y, y);
 
-                        if (space.y > y) {
-                            yDif = space.y - y;
-                        } else {
-                            yDif = y - space.y;
-                        }
+//                        if (space.x > x) {
+//                            xDif = space.x - x;
+//                        } else {
+//                            xDif = x - space.x;
+//                        }
+//
+//                        if (space.y > y) {
+//                            yDif = space.y - y;
+//                        } else {
+//                            yDif = y - space.y;
+//                        }
 
                         if (xDif + yDif < range) {
                             r.push(bord[x][y]);
@@ -229,17 +236,21 @@ public class GameBoard {
 //                        if (bord[x][y].getPlayerNumber() != playerNumber) {
                             int xDif, yDif;
 
-                            if (space.x > x) {
-                                xDif = space.x - x;
-                            } else {
-                                xDif = x - space.x;
-                            }
+                            xDif = getDis(space.x, x);
+                            yDif = getDis(space.y, y);
 
-                            if (space.y > y) {
-                                yDif = space.y - y;
-                            } else {
-                                yDif = y - space.y;
-                            }
+
+//                            if (space.x > x) {
+//                                xDif = space.x - x;
+//                            } else {
+//                                xDif = x - space.x;
+//                            }
+//
+//                            if (space.y > y) {
+//                                yDif = space.y - y;
+//                            } else {
+//                                yDif = y - space.y;
+//                            }
 
                             if (xDif < attackDropOff && yDif < attackDropOff) {
                                 possibleOneRangeAttackVectors.push(new Space(x, y));
@@ -269,6 +280,70 @@ public class GameBoard {
         }
         return r;
     }
+
+    public void move(Space origin, Space select, int attackDropOff, int range, int playerNumber) {
+        int distance = getDis(origin.x, select.x) + getDis(origin.y, select.y);
+
+        if (distance < attackDropOff) {
+            shortRangeAttack(select, playerNumber);
+        } else if (distance < range) {
+            longRangeAttack(origin, select, playerNumber);
+        }
+    }
+
+    public void shortRangeAttack(Space select, int playerNumber) {
+        setInfected(getInfected(select, playerNumber), playerNumber);
+    }
+
+    public void longRangeAttack(Space origin, Space select, int playerNumber) {
+        bord[origin.x][origin.y].deselect();
+        setInfected(getInfected(select, playerNumber), playerNumber);
+    }
+
+    public int getDis(int origin, int destination) {
+        if (origin > destination) {
+            return origin - destination;
+        } else {
+            return destination - origin;
+        }
+    }
+
+    public Stapel<Space> getInfected(Space select, int playerNumber) {
+        Stapel<Space> spaceSelectSquare = getSquare(select, 1);
+        Stapel<Space> returnStack = new Stapel<>();
+
+        int size = spaceSelectSquare.getSize();
+
+        for (int i = 0; i < size; i++) {
+            try {
+                Space t = spaceSelectSquare.pop();
+                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != playerNumber) {
+                    returnStack.push(t);
+                }
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+        return returnStack;
+    }
+
+    public void setInfected(Stapel<Space> spaces, int playerNumber) {
+        int s = spaces.getSize();
+
+        for (int i = 0; i < s; i++) {
+            try {
+                Space t = spaces.pop();
+                bord[t.x][t.y].take(playerNumber);
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void setInfected(Space space, int playerNumber) {
+        bord[space.x][space.y].take(playerNumber);
+    }
+
 
     public Space[][] copyBord() {
         Space[][] copy = new Space[xGroote][yGroote];
