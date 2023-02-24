@@ -152,7 +152,7 @@ public class GameController extends AbstractController implements Initializable 
         }
 
         if (checkGameConditions(newP, oldP)) {
-            endGame(oldP);
+            endGame();
         } else {
             if (gameData.player1Finished && gameData.player2Finished) endTurn();
             setNewPlayerMove();
@@ -631,22 +631,16 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private void endGameEvent() {
         AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
-        if (gameData.getPlayerOneScore() > gameData.getPlayerTwoScore()) {
-            endGame(1);
-        } else if (gameData.getPlayerTwoScore() > gameData.getPlayerOneScore()) {
-            endGame(2);
-        } else {
-            endGame(0);
-        }
+
+        endGame();
     }
 
-    protected void endGame(int winner) {
+    protected void endGame() {
         FXMLPart gameOver = FXMLPart.GAMEOVER;
-
-        if (winner == 1) {
+        if (gameData.getPlayerOneScore() > gameData.getPlayerTwoScore()) {
             GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P1, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
             JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
-        } else if (winner == 2) {
+        } else if (gameData.getPlayerTwoScore() > gameData.getPlayerOneScore()) {
             GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P2, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
             JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
         } else {
@@ -654,6 +648,7 @@ public class GameController extends AbstractController implements Initializable 
             JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
         }
     }
+
 
     // ----- for adding sounds? -----
 

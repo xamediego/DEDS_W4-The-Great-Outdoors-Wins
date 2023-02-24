@@ -53,12 +53,6 @@ public class GameBoard {
     }
 
     public boolean checkBoard(int nextplayer, int oldPlayer) {
-        boolean t = checkPossibleAttacks(nextplayer, oldPlayer);
-        boolean a = checkPlayerSquares();
-        boolean b = isFull();
-
-        System.out.println("MOVE POSS: " + nextplayer + " | " + t + " NO ZERO: " + a  +" FULL: " + b);
-
         return checkPossibleAttacks(nextplayer, oldPlayer) || checkPlayerSquares() || isFull();
     }
 
@@ -280,8 +274,6 @@ public class GameBoard {
             try {
                 Space t = spaceSelectSquare.pop();
                 if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != playerNumber) {
-                    System.out.println("ADD");
-                    System.out.println(t);
                     returnStack.push(t);
                 }
             } catch (UnderflowException e) {
