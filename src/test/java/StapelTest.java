@@ -195,25 +195,13 @@ public class StapelTest {
 
         Assertions.assertTrue(gameBoard.isFull());
 
-        Assertions.assertFalse(gameBoard.checkPossibleAttacks(1));
-        Assertions.assertTrue(gameBoard.checkPossibleAttacks(2));
+        Assertions.assertTrue(gameBoard.checkPossibleAttacks(1,2));
+        Assertions.assertTrue(gameBoard.checkPossibleAttacks(2,1));
 
         Assertions.assertFalse(gameBoard.checkScore(1));
         Assertions.assertTrue(gameBoard.checkScore(2));
 
-        Assertions.assertTrue(gameBoard.checkBoard(1));
-        Assertions.assertTrue(gameBoard.checkBoard(2));
+        Assertions.assertTrue(gameBoard.checkBoard(1,2));
+        Assertions.assertTrue(gameBoard.checkBoard(2,1));
     }
-
-    @Test
-    void randomAITest(){
-        GameBoard gameBoard = new GameBoard(7,7, new Space[7][7]);
-        AILogic aiLogic = new AILogic();
-
-        while (!gameBoard.checkBoard(1) && !gameBoard.checkBoard(2)){
-
-        }
-    }
-
-
 }

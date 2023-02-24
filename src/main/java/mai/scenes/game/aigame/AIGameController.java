@@ -36,7 +36,7 @@ public class AIGameController extends GameController {
             gameData.currentPlayer = gameData.getPlayer1();
         }
 
-        if (checkGameConditions(newP)) {
+        if (checkGameConditions(newP, oldP)) {
             endGame(oldP);
         } else {
             if (gameData.player1Finished && gameData.player2Finished) endTurn();

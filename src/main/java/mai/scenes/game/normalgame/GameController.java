@@ -151,7 +151,7 @@ public class GameController extends AbstractController implements Initializable 
             gameData.currentPlayer = gameData.getPlayer1();
         }
 
-        if (checkGameConditions(newP)) {
+        if (checkGameConditions(newP, oldP)) {
             endGame(oldP);
         } else {
             if (gameData.player1Finished && gameData.player2Finished) endTurn();
@@ -166,8 +166,8 @@ public class GameController extends AbstractController implements Initializable 
         setSelectAble();
     }
 
-    protected boolean checkGameConditions(int nextPlayer) {
-        return gameData.gameBoard.checkBoard(nextPlayer);
+    protected boolean checkGameConditions(int newP, int oldP) {
+        return gameData.gameBoard.checkBoard(newP, oldP);
     }
 
     protected void addGameHistory(GameData data) {
