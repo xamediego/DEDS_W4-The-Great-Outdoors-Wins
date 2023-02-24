@@ -2,30 +2,33 @@ package mai.bootstrap;
 
 
 import mai.data.AI;
+import mai.data.User;
 import mai.enums.Difficulty;
 import mai.service.AIService;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 
 public class GenerateData {
 
     public static void createUserWithImage() {
-
-        //find way to switch this to the normal resource folder
-        File dir = new File("src/test/resources/usercrops");
+        File dir = new File("src/main/resources/usercrops");
 
         Random random = new Random();
 
         String colour = "#d14957";
 
         for (int i = 0; i < Objects.requireNonNull(dir.listFiles()).length; i += 1) {
-            AI ai = new AI(FilenameUtils.removeExtension(Objects.requireNonNull(dir.listFiles())[i].getName()), colour, Objects.requireNonNull(dir.listFiles())[i].getAbsolutePath());
+            AI ai = new AI(
+                    FilenameUtils.removeExtension(Objects.requireNonNull(dir.listFiles())[i].getName()),
+                    colour,
+                    Objects.requireNonNull(dir.listFiles())[i].getAbsolutePath(),
+                    2,
+                    2,
+                    3
+            );
 
             if (i == 0) {
                 ai.setAiTypes(new HashSet<>(Set.of(Difficulty.JOURNALIST)));

@@ -10,12 +10,16 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import mai.audio.MenuAudio;
+import mai.bootstrap.BootstrapData;
 import mai.enums.FXMLPart;
 import mai.scenes.gamemenu.GameMenuController;
 import mai.scenes.gamemenu.GameMenuScene;
 import mai.scenes.titlebar.TitlebarController;
 import mai.scenes.titlebar.TitlebarScene;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.awt.*;
 import java.io.IOException;
 
 public class JFXApplication extends Application{
@@ -50,6 +54,12 @@ public class JFXApplication extends Application{
 
         borderlessScene.removeDefaultCSS();
 
+        try {
+            MenuAudio.loadSounds();
+        } catch (UnsupportedAudioFileException | IOException e) {
+            e.printStackTrace();
+        }
+
         GameMenuScene gameMenuScene = new GameMenuScene(new GameMenuController(), FXMLPart.MENU);
         VBox.setVgrow(gameMenuScene.getRoot(), Priority.ALWAYS);
 
@@ -62,6 +72,8 @@ public class JFXApplication extends Application{
         customStage.setTitle("Sneed-Cutter");
         customStage.setResizable(false);
         customStage.show();
+
+        BootstrapData.loadData();
     }
 
 }

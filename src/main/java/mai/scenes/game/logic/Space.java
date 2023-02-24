@@ -34,4 +34,14 @@ public class Space {
         isTaken = false;
         this.playerNumber = 0;
     }
+
+    @Override
+    public String toString() {
+        return "Space{" +
+                "x=" + x +
+                ", y=" + y +
+                ", isTaken=" + isTaken +
+                ", playerNumber=" + playerNumber +
+                '}';
+    }
 }

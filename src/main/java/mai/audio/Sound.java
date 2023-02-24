@@ -1,4 +1,4 @@
-package mai.enums;
+package mai.audio;
 
 public enum Sound {
 
@@ -12,6 +12,7 @@ public enum Sound {
             return "src/main/resources/Sounds/S_SUMMON.wav";
         }
     };
+
     public abstract String getAudio();
 
 }

@@ -1,4 +1,4 @@
-package mai.service;
+package mai.audio;
 
 import javax.sound.sampled.*;
 import java.io.File;

@@ -24,6 +24,8 @@ public class AIGameController extends GameController {
             gameData.player1Finished = true;
             gameData.currentPlayer = gameData.getPlayer2();
 
+            addGameHistory(oldGameData);
+
             oldP = 1;
             newP = 2;
         } else {
@@ -34,7 +36,7 @@ public class AIGameController extends GameController {
             gameData.currentPlayer = gameData.getPlayer1();
         }
 
-        if (checkGameConditions(oldP)) {
+        if (checkGameConditions(newP)) {
             endGame(oldP);
         } else {
             if (gameData.player1Finished && gameData.player2Finished) endTurn();
@@ -72,13 +74,9 @@ public class AIGameController extends GameController {
 
             setCurrentPlayer();
 
-            AIMove aiMove = aiLogic.makeMove(this.gameData.gameBoard, gameData.getPlayer2());
+            AIMove aiMove = aiLogic.makeMove(this.gameData.gameBoard, gameData.getPlayer2(), 2, 1);
 
-//            if(this.gameData.gameBoard.getDis(aiMove.getOrigin().x, aiMove.getSelected().x) + (this.gameData.gameBoard.getDis(aiMove.getOrigin().x, aiMove.getSelected().x) < 2){
-//
-//            } else {
-//
-//            }
+            move(aiMove.getOrigin(), aiMove.getSelected(), gameData.getPlayer2(), gameData.getPlayer2().getRange(), gameData.getPlayer2().getAttackDropOff());
         } catch (UnderflowException e) {
             e.printStackTrace();
         }

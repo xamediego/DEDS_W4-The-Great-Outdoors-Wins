@@ -1,4 +1,4 @@
-package mai.enums;
+package mai.audio;
 
 public enum ButtonAudio {
 

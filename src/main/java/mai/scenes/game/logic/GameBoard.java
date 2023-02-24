@@ -30,7 +30,6 @@ public class GameBoard {
     public void setInitialOccupied(int startingSize) {
         if (startingSize * 2 > yGroote || startingSize * 2 > xGroote) {
             //throw error?
-            System.out.println("Starting size is too large");
         } else {
             cornerOne(startingSize);
             cornerTwo(startingSize);
@@ -53,16 +52,23 @@ public class GameBoard {
         }
     }
 
-    public boolean checkBoard(int nextplayer) {
-        return checkPossibleAttacks(nextplayer) || checkPlayerSquares() || isFull();
+    public boolean checkBoard(int nextplayer, int oldPlayer) {
+        boolean t = checkPossibleAttacks(nextplayer, oldPlayer);
+        boolean a = checkPlayerSquares();
+        boolean b = isFull();
+
+        System.out.println("MOVE POSS: " + nextplayer + " | " + t + " NO ZERO: " + a  +" FULL: " + b);
+
+        return checkPossibleAttacks(nextplayer, oldPlayer) || checkPlayerSquares() || isFull();
     }
 
-    public boolean checkPossibleAttacks(int nextPlayer) {
+    public boolean checkPossibleAttacks(int nextPlayer, int oldPlayer) {
         boolean r = getPlayerMoves(nextPlayer).isEmpty();
 
-        if (r) {
-            return checkScore(nextPlayer);
-        }
+//        if (r) {
+//            return checkScore(oldPlayer);
+//        }
+
         return r;
     }
 
@@ -116,7 +122,7 @@ public class GameBoard {
 
                 if (bord[x][y].getPlayerNumber() == playerNumber) {
                     Space select = new Space(x, y, true, playerNumber);
-                    AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2, playerNumber);
+                    AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2);
                     if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() || !attackVectors.possibleTwoRangeAttackVectors().isEmpty()) {
                         selectAble.push(select);
                     }
@@ -145,7 +151,7 @@ public class GameBoard {
     }
 
 
-    public AttackVectors getPossibleAttackDiagonal(Space space, int range, int attackDropOff, int playerNumber) {
+    public AttackVectors getPossibleAttackDiagonal(Space space, int range, int attackDropOff) {
         Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
         Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
 
@@ -154,23 +160,8 @@ public class GameBoard {
                 for (int y = space.y - (range - 1); y < space.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
                         if (!bord[x][y].isTaken()) {
-//                        if (bord[x][y].getPlayerNumber() != playerNumber) {
-                            int xDif, yDif;
-
-                            xDif = getDis(space.x, x);
-                            yDif = getDis(space.y, y);
-
-//                            if (space.x > x) {
-//                                xDif = space.x - x;
-//                            } else {
-//                                xDif = x - space.x;
-//                            }
-//
-//                            if (space.y > y) {
-//                                yDif = space.y - y;
-//                            } else {
-//                                yDif = y - space.y;
-//                            }
+                            int xDif = getDis(space.x, x);
+                            int yDif = getDis(space.y, y);
 
                             if (xDif + yDif < range) {
                                 if (xDif + yDif < attackDropOff) {
@@ -196,22 +187,8 @@ public class GameBoard {
             if (x >= 0 && x < xGroote) {
                 for (int y = space.y - range - 1; y < space.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
-                        int xDif, yDif;
-
-                        xDif = getDis(space.x, x);
-                        yDif = getDis(space.y, y);
-
-//                        if (space.x > x) {
-//                            xDif = space.x - x;
-//                        } else {
-//                            xDif = x - space.x;
-//                        }
-//
-//                        if (space.y > y) {
-//                            yDif = space.y - y;
-//                        } else {
-//                            yDif = y - space.y;
-//                        }
+                        int xDif = getDis(space.x, x);
+                        int yDif = getDis(space.y, y);
 
                         if (xDif + yDif < range) {
                             r.push(bord[x][y]);
@@ -224,7 +201,7 @@ public class GameBoard {
         return r;
     }
 
-    public AttackVectors getPossibleAttackSquare(Space space, int range, int attackDropOff, int playerNumber) {
+    public AttackVectors getPossibleAttackSquare(Space space, int range, int attackDropOff) {
         Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
         Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
 
@@ -233,24 +210,8 @@ public class GameBoard {
                 for (int y = space.y - (range - 1); y < space.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
                         if (!bord[x][y].isTaken()) {
-//                        if (bord[x][y].getPlayerNumber() != playerNumber) {
-                            int xDif, yDif;
-
-                            xDif = getDis(space.x, x);
-                            yDif = getDis(space.y, y);
-
-
-//                            if (space.x > x) {
-//                                xDif = space.x - x;
-//                            } else {
-//                                xDif = x - space.x;
-//                            }
-//
-//                            if (space.y > y) {
-//                                yDif = space.y - y;
-//                            } else {
-//                                yDif = y - space.y;
-//                            }
+                            int xDif = getDis(space.x, x);
+                            int yDif = getDis(space.y, y);
 
                             if (xDif < attackDropOff && yDif < attackDropOff) {
                                 possibleOneRangeAttackVectors.push(new Space(x, y));
@@ -266,12 +227,12 @@ public class GameBoard {
         return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public Stapel<Space> getSquare(Space space, int range) {
+    public Stapel<Space> getSquare(Space space, int infectRange) {
         Stapel<Space> r = new Stapel<>();
 
-        for (int x = space.x - 1; x < space.x + 2; x++) {
+        for (int x = space.x - (infectRange - 1); x < space.x + infectRange; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = space.y - 1; y < space.y + 2; y++) {
+                for (int y = space.y - (infectRange - 1); y < space.y + infectRange; y++) {
                     if (y >= 0 && y < yGroote) {
                         r.push(bord[x][y]);
                     }
@@ -300,6 +261,7 @@ public class GameBoard {
         setInfected(getInfected(select, playerNumber), playerNumber);
     }
 
+
     public int getDis(int origin, int destination) {
         if (origin > destination) {
             return origin - destination;
@@ -309,7 +271,7 @@ public class GameBoard {
     }
 
     public Stapel<Space> getInfected(Space select, int playerNumber) {
-        Stapel<Space> spaceSelectSquare = getSquare(select, 1);
+        Stapel<Space> spaceSelectSquare = getSquare(select, 2);
         Stapel<Space> returnStack = new Stapel<>();
 
         int size = spaceSelectSquare.getSize();
@@ -318,12 +280,15 @@ public class GameBoard {
             try {
                 Space t = spaceSelectSquare.pop();
                 if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != playerNumber) {
+                    System.out.println("ADD");
+                    System.out.println(t);
                     returnStack.push(t);
                 }
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
+
         return returnStack;
     }
 

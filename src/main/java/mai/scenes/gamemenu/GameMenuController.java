@@ -21,7 +21,7 @@ public class GameMenuController extends AbstractController implements Initializa
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        setContent(new GameConfigScene( new GameConfigController(Optional.empty()), FXMLPart.GAMECONFIG).getRoot());
+        setContent(new GameConfigScene( new GameConfigController(), FXMLPart.GAMECONFIG).getRoot());
     }
 
     public void setContent(Node root) {

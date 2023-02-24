@@ -6,12 +6,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
 import javafx.scene.input.MouseEvent;
 import mai.JFXApplication;
 import mai.audio.MenuAudio;
+import mai.bootstrap.BootstrapData;
 import mai.data.User;
-import mai.enums.ButtonAudio;
 import mai.enums.Difficulty;
 import mai.enums.FXMLPart;
 import mai.scenes.game.aigame.AIGameController;
@@ -21,12 +20,11 @@ import mai.scenes.game.logic.GameData;
 import mai.scenes.game.logic.Space;
 import mai.scenes.test.AbstractController;
 import mai.service.AIService;
-import mai.service.AudioPlayer;
+import mai.audio.AudioPlayer;
+import mai.service.UserService;
 
-import java.io.File;
 import java.net.URL;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class GameConfigController extends AbstractController implements Initializable {
@@ -40,18 +38,12 @@ public class GameConfigController extends AbstractController implements Initiali
     @FXML
     private Button startButton;
 
-    private final Optional<User> user;
-
-    public GameConfigController(Optional<User> user) {
-        this.user = user;
-    }
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configureChoiceBox();
         configStartButton();
 
-        if (user.isPresent()) {
+        if (UserService.user != null) {
             gameInfo.setText("Game history will be recorded after the match");
         } else {
             gameInfo.setText("No game history will be recorded after the match\nPlease login if you want your game history to be recorded");
@@ -76,17 +68,22 @@ public class GameConfigController extends AbstractController implements Initiali
         GameBoard gameBoard = new GameBoard(7, 7, new Space[7][7]);
         gameBoard.configBoard();
 
-        if (user.isPresent()) {
-            GameData gameData = new GameData(4, 4, 1,  user.get(), AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
+        if (UserService.user != null) {
+            GameData gameData = new GameData(4, 4, 1,  UserService.user, AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
             AIGameController aiGameController = new AIGameController(gameData, 75);
 
             JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         } else {
+            System.out.println("AI GAME");
             User tempUser = new User();
+
             tempUser.setPlayerName("Anon");
             tempUser.setPlayerColour("#5ef77f");
             tempUser.setProfilePictureUrl("/images/app/defaultProfImage.png");
             tempUser.setPlayerNumber(1);
+
+            tempUser.setAttackDropOff(2);
+            tempUser.setRange(3);
 
             GameData gameData = new GameData(4, 4, 1, tempUser, AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
             AIGameController aiGameController = new AIGameController(gameData, 75);

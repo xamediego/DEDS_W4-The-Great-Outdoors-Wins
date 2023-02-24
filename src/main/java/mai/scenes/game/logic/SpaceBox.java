@@ -30,7 +30,6 @@ public class SpaceBox extends HBox {
     }
 
     public void setText(String text){
-
 //        boxLabel.setText(text);
     }
 

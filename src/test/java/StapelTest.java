@@ -1,17 +1,11 @@
 import mai.datastructs.Stapel;
 import mai.exceptions.UnderflowException;
+import mai.scenes.game.aigame.AILogic;
 import mai.scenes.game.logic.GameBoard;
 import mai.scenes.game.logic.GameData;
 import mai.scenes.game.logic.Space;
-import mai.service.AudioPlayer;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.util.UUID;
 
 public class StapelTest {
 
@@ -112,6 +106,35 @@ public class StapelTest {
         Assertions.assertThrows(UnderflowException.class, stapel::pop);
     }
 
+
+    @Test
+    void stackContainTest(){
+        int count = 10;
+
+        Stapel<Integer> stapel = new Stapel<>();
+
+        for (int i = 1; i <= count; i++) {
+            stapel.push(i);
+        }
+
+        Assertions.assertTrue(stapel.contains(1));
+    }
+
+    @Test
+    void stackDoesNotContainTest(){
+        int count = 10;
+
+        Stapel<Integer> stapel = new Stapel<>();
+
+        for (int i = 1; i <= count; i++) {
+            stapel.push(i);
+        }
+
+        Assertions.assertFalse(stapel.contains(0));
+    }
+
+
+
     @Test
     void peekUnderflowTest() {
         Stapel<Integer> stapel = new Stapel<>();
@@ -180,6 +203,16 @@ public class StapelTest {
 
         Assertions.assertTrue(gameBoard.checkBoard(1));
         Assertions.assertTrue(gameBoard.checkBoard(2));
+    }
+
+    @Test
+    void randomAITest(){
+        GameBoard gameBoard = new GameBoard(7,7, new Space[7][7]);
+        AILogic aiLogic = new AILogic();
+
+        while (!gameBoard.checkBoard(1) && !gameBoard.checkBoard(2)){
+
+        }
     }
 
 

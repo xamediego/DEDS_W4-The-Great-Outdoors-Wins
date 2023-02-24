@@ -49,7 +49,48 @@ public class Stapel<T> {
         return top.value;
     }
 
+    public boolean contains(T value){
+        Node<T> compareNode = top;
+
+        for(int i = 0; i < size; i++){
+            if(value == compareNode.value) return true;
+            compareNode = compareNode.prev;
+        }
+
+        return false;
+    }
+
+
+    public void pushAll(Stapel<T> values){
+        while (!values.isEmpty()){
+            try {
+                push(values.pop());
+            } catch (UnderflowException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public int getSize(){
         return size;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder returnString = new StringBuilder();
+
+        Node<T> compareNode = top;
+
+        for(int i = 0; i < size; i++){
+            if (i <= size - 1) {
+                returnString.append(compareNode.value.toString()).append("/n");
+                compareNode = compareNode.prev;
+            } else {
+                returnString.append(compareNode.value.toString());
+                compareNode = compareNode.prev;
+            }
+        }
+
+        return returnString.toString();
     }
 }

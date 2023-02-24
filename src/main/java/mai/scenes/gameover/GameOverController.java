@@ -14,15 +14,12 @@ import mai.audio.MenuAudio;
 import mai.data.User;
 import mai.enums.FXMLPart;
 import mai.enums.MatchOverType;
-import mai.enums.Sound;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
 import mai.scenes.test.AbstractController;
-import mai.service.AudioPlayer;
+import mai.audio.AudioPlayer;
 
-import java.io.File;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class GameOverController extends AbstractController implements Initializable {
@@ -62,13 +59,12 @@ public class GameOverController extends AbstractController implements Initializa
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configButton();
         if(matchOverType.equals(MatchOverType.P1)){
-//            AudioPlayer.playAudioFile(new File(Sound.WIN.getAudio()));
             setWinner(player1, String.valueOf(player1Score), "Has won with a score of:");
         } else if(matchOverType.equals(MatchOverType.P2)){
-            AudioPlayer.playAudioFile(new File(Sound.LOST.getAudio()));
+            AudioPlayer.playAudioFile(MenuAudio.LOST);
             setWinner(player2, String.valueOf(player2Score), "Has won with a score of:");
         } else {
-            AudioPlayer.playAudioFile(new File(Sound.LOST.getAudio()));
+            AudioPlayer.playAudioFile(MenuAudio.LOST);
             User tempUser = new User();
             tempUser.setPlayerColour("WHITE");
             tempUser.setPlayerName("GOD WON");
@@ -111,7 +107,7 @@ public class GameOverController extends AbstractController implements Initializa
     @FXML
     private void returnToMain(){
         AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
-        JFXApplication.gameMenuController.setContent(new GameConfigScene(new GameConfigController(Optional.empty()), FXMLPart.GAMECONFIG).getRoot());
+        JFXApplication.gameMenuController.setContent(new GameConfigScene(new GameConfigController(), FXMLPart.GAMECONFIG).getRoot());
     }
 
 }
