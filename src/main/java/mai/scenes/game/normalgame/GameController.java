@@ -21,6 +21,7 @@ import mai.enums.ButtonType;
 import mai.enums.FXMLPart;
 import mai.enums.GameOverType;
 import mai.exceptions.UnderflowException;
+import mai.scenes.game.Parts.UserInfoBox;
 import mai.scenes.game.logic.*;
 import mai.scenes.gameover.GameOverController;
 import mai.scenes.gameover.GameOverScene;
@@ -52,12 +53,6 @@ public class GameController extends AbstractController implements Initializable 
     private VBox bordColumnBox;
 
     @FXML
-    private Label player1Score;
-
-    @FXML
-    private Label player2Score;
-
-    @FXML
     private Label turnInfo;
 
     @FXML
@@ -75,23 +70,14 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- UserDetails -----
 
-    @FXML
-    private Label player1Label;
+    UserInfoBox horizontalPlayerOneInfo;
+    UserInfoBox horizontalPlayerTwoInfo;
 
     @FXML
-    private Label player2Label;
-
+    private VBox HorizontalPlayerOneInfoContainer;
     @FXML
-    private ImageView player1Avatar;
+    private VBox HorizontalPlayerTwoInfoContainer;
 
-    @FXML
-    private Circle player1AvatarCircle;
-
-    @FXML
-    private ImageView player2Avatar;
-
-    @FXML
-    private Circle player2AvatarCircle;
 
     public GameController(GameData gameData, int spaceMinSize, int spaceMaxSize) {
         this.gameData = gameData;
@@ -107,8 +93,11 @@ public class GameController extends AbstractController implements Initializable 
         AudioPlayer.playAudioFile(MenuAudio.SUMMON);
         configButtons();
 
-        configPlayer1(gameData.getPlayer1());
-        configPlayer2(gameData.getPlayer2());
+        horizontalPlayerOneInfo = new UserInfoBox(gameData.getPlayer1(), gameData.getPlayerOneScore(), "Hoodie",60);
+        horizontalPlayerTwoInfo = new UserInfoBox(gameData.getPlayer2(), gameData.getPlayerTwoScore(), "Baggy Sweater",60);
+
+        HorizontalPlayerOneInfoContainer.getChildren().add(horizontalPlayerOneInfo);
+        HorizontalPlayerTwoInfoContainer.getChildren().add(horizontalPlayerTwoInfo);
 
         configBoard();
         setInitialTurn();
@@ -399,31 +388,11 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     private void updatePointLabel() {
-        player1Score.setText(String.valueOf(gameData.getPlayerOneScore()));
-        player2Score.setText(String.valueOf(gameData.getPlayerTwoScore()));
-    }
-
-    // ----- configuring initial user details -----
-
-    private void configPlayer1(User user) {
-        configAvatar(user, player1Avatar, player1AvatarCircle);
-        configLabel(user, player1Label);
-    }
-
-    private void configPlayer2(User user) {
-        configAvatar(user, player2Avatar, player2AvatarCircle);
-        configLabel(user, player2Label);
+        horizontalPlayerOneInfo.getScoreLabel().setText(String.valueOf(gameData.getPlayerOneScore()));
+        horizontalPlayerTwoInfo.getScoreLabel().setText(String.valueOf(gameData.getPlayerTwoScore()));
     }
 
     // ----- configuring initial avatars -----
-
-    private void configAvatar(User user, ImageView avatarView, Circle playerAvatarCircle) {
-        if (user.getProfilePictureUrl() != null) {
-            setAvatar(avatarView, new Image(user.getProfilePictureUrl()), playerAvatarCircle, user.getPlayerColour());
-        } else {
-            setAvatar(avatarView, new Image("/images/app/defaultProfImage.png"), playerAvatarCircle, user.getPlayerColour());
-        }
-    }
 
     private void setAvatar(ImageView avatarView, Image image, Circle playerAvatarCircle, String colour) {
         avatarView.setImage(image);
@@ -435,13 +404,6 @@ public class GameController extends AbstractController implements Initializable 
         avatarView.setClip(circle);
 
         playerAvatarCircle.setStyle("-fx-stroke: " + colour);
-    }
-
-    // ----- configuring initial player names -----
-
-    private void configLabel(User user, Label label) {
-        label.setText(user.getPlayerName());
-        label.setStyle("-fx-text-fill: " + user.getPlayerColour());
     }
 
     // ----- configuring initial board -----
@@ -564,10 +526,10 @@ public class GameController extends AbstractController implements Initializable 
         currentPlayerLabel.setText(gameData.currentPlayer.getPlayerName());
 
         if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            addTurnGlow(player1Label, player1AvatarCircle);
+            setTurnGlow(1);
             setResetButtonActive(true);
         } else {
-            addTurnGlow(player2Label, player2AvatarCircle);
+            setTurnGlow(2);
             setResetButtonActive(false);
         }
     }
@@ -576,11 +538,11 @@ public class GameController extends AbstractController implements Initializable 
 
     protected void setTurnGlow(int playerNumber) {
         if (playerNumber == 1) {
-            addTurnGlow(player1Label, player1AvatarCircle);
-            removeTurnGlow(player2Label, player2AvatarCircle);
+            addTurnGlow(horizontalPlayerOneInfo.getPlayerLabel(), horizontalPlayerOneInfo.getAvatarBox().getAvatarCircle());
+            removeTurnGlow(horizontalPlayerTwoInfo.getPlayerLabel(), horizontalPlayerTwoInfo.getAvatarBox().getAvatarCircle());
         } else {
-            addTurnGlow(player2Label, player2AvatarCircle);
-            removeTurnGlow(player1Label, player1AvatarCircle);
+            addTurnGlow(horizontalPlayerTwoInfo.getPlayerLabel(), horizontalPlayerTwoInfo.getAvatarBox().getAvatarCircle());
+            removeTurnGlow(horizontalPlayerOneInfo.getPlayerLabel(), horizontalPlayerOneInfo.getAvatarBox().getAvatarCircle());
         }
     }
 

@@ -6,8 +6,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 
-import java.io.File;
-
 public class AvatarBox extends HBox {
 
     private final StackPane rootPane;
@@ -19,6 +17,12 @@ public class AvatarBox extends HBox {
         avatar = new ImageView(image);
 
         avatarCircle = new Circle();
+        avatarCircle.getStyleClass().add("avatarCircle");
+        avatarCircle.setRadius((float) size / 2);
+
+        avatar.setFitWidth(size);
+        avatar.setFitHeight(size);
+        avatar.getStyleClass().add("avatarImage");
 
         Circle circle = new Circle(avatar.getBaselineOffset() / 2);
         circle.setLayoutX(avatar.getFitWidth() / 2);
@@ -28,6 +32,11 @@ public class AvatarBox extends HBox {
 
         rootPane.getChildren().add(avatarCircle);
         rootPane.getChildren().add(avatar);
+
+        this.getChildren().add(rootPane);
+
+        this.getStylesheets().add("Styling/avatarbox.css");
+        this.getStyleClass().add("avatarBox");
 
         this.setMaxSize(size, size);
         this.setMinSize(size, size);

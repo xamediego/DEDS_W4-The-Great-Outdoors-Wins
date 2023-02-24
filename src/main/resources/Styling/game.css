@@ -1,10 +1,3 @@
-.avatarCircle {
-    -fx-fill: TRANSPARENT;
-    -fx-stroke: #fff;
-    -fx-stroke-width: 2;
-    -fx-stroke-type: CENTERED;
-}
-
 .gameBoard {
     -fx-background-radius: 8px;
 }

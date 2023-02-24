@@ -8,12 +8,14 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.shape.Circle;
 import mai.JFXApplication;
 import mai.audio.MenuAudio;
 import mai.data.User;
 import mai.enums.FXMLPart;
 import mai.enums.GameOverType;
+import mai.scenes.game.Parts.AvatarBox;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
 import mai.scenes.test.AbstractController;
@@ -28,6 +30,9 @@ public class GameOverController extends AbstractController implements Initializa
     private final GameOverType gameOverType;
 
     private final int player1Score, player2Score;
+
+    @FXML
+    private HBox avatarContainer;
 
     @FXML
     private Circle playerAvatarCircle;
@@ -58,6 +63,7 @@ public class GameOverController extends AbstractController implements Initializa
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configButton();
+
         if(gameOverType.equals(GameOverType.P1)){
             setWinner(player1, String.valueOf(player1Score), "Has won with a score of:");
         } else if(gameOverType.equals(GameOverType.P2)){
@@ -65,29 +71,23 @@ public class GameOverController extends AbstractController implements Initializa
             setWinner(player2, String.valueOf(player2Score), "Has won with a score of:");
         } else {
             AudioPlayer.playAudioFile(MenuAudio.LOST);
+
             User tempUser = new User();
             tempUser.setPlayerColour("WHITE");
             tempUser.setPlayerName("GOD WON");
             tempUser.setProfilePictureUrl("Images/App/Thierry.png");
             setWinner(tempUser,"" ,"Draw, you both lost");
         }
+
     }
 
     private void setWinner(User user, String score, String winText){
-        setAvatar(new Image(user.getProfilePictureUrl()), user.getPlayerColour());
+        setAvatar(user);
         setLabels(score, user.getPlayerName(), winText);
     }
 
-    private void setAvatar(Image image, String colour) {
-        avatarView.setImage(image);
-
-        Circle circle = new Circle(avatarView.getBaselineOffset() / 2);
-        circle.setLayoutX(avatarView.getFitWidth() / 2);
-        circle.setLayoutY(avatarView.getFitHeight() / 2);
-
-        avatarView.setClip(circle);
-
-        playerAvatarCircle.setStyle("-fx-stroke: " + colour);
+    private void setAvatar(User user) {
+        avatarContainer.getChildren().add(new AvatarBox(120, new Image(user.getProfilePictureUrl()), user.getPlayerColour()));
     }
 
     private void setLabels(String score, String username, String winText){
