@@ -2,8 +2,7 @@ package mai.bootstrap;
 
 
 import mai.data.AI;
-import mai.data.User;
-import mai.enums.Difficulty;
+import mai.enums.AIType;
 import mai.service.AIService;
 import org.apache.commons.io.FilenameUtils;
 
@@ -31,13 +30,13 @@ public class GenerateData {
             );
 
             if (i == 0) {
-                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.JOURNALIST)));
+                ai.setAiTypes(new HashSet<>(Set.of(AIType.JOURNALIST)));
             } else if (i == 1) {
-                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.EASY)));
+                ai.setAiTypes(new HashSet<>(Set.of(AIType.EASY)));
             } else if (i == 2) {
-                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.NORMAL)));
+                ai.setAiTypes(new HashSet<>(Set.of(AIType.NORMAL)));
             } else {
-                ai.setAiTypes(new HashSet<>(Set.of(Difficulty.values()[random.nextInt(3)])));
+                ai.setAiTypes(new HashSet<>(Set.of(AIType.values()[random.nextInt(3)])));
             }
 
             AIService.aiList.add(ai);

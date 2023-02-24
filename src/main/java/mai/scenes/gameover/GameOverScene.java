@@ -1,7 +1,7 @@
 package mai.scenes.gameover;
 
 import mai.enums.FXMLPart;
-import mai.scenes.test.AbstractScene;
+import mai.scenes.sceneconstructor.AbstractScene;
 
 public class GameOverScene extends AbstractScene<GameOverController> {
 

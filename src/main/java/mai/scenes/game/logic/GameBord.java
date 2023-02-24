@@ -3,26 +3,26 @@ package mai.scenes.game.logic;
 import mai.datastructs.Stapel;
 import mai.exceptions.UnderflowException;
 
-public class GameBoard {
+public class GameBord {
 
-    private final Space[][] bord;
+    private final Plek[][] bord;
 
     public int xGroote, yGroote;
 
-    public GameBoard(int xGroote, int yGroote, Space[][] bord) {
+    public GameBord(int xGroote, int yGroote, Plek[][] bord) {
         this.bord = bord;
         this.xGroote = xGroote;
         this.yGroote = yGroote;
     }
 
-    public Space[][] getBord() {
+    public Plek[][] getBord() {
         return bord;
     }
 
     public void configBoard() {
         for (int x = 0; x < xGroote; x++) {
             for (int y = 0; y < yGroote; y++) {
-                bord[x][y] = new Space(x, y);
+                bord[x][y] = new Plek(x, y);
             }
         }
     }
@@ -52,18 +52,12 @@ public class GameBoard {
         }
     }
 
-    public boolean checkBoard(int nextplayer, int oldPlayer) {
-        return checkPossibleAttacks(nextplayer, oldPlayer) || checkPlayerSquares() || isFull();
+    public boolean checkBoard(int nextplayer) {
+        return checkPossibleAttacks(nextplayer) || checkPlayerSquares() || isFull();
     }
 
-    public boolean checkPossibleAttacks(int nextPlayer, int oldPlayer) {
-        boolean r = getPlayerMoves(nextPlayer).isEmpty();
-
-//        if (r) {
-//            return checkScore(oldPlayer);
-//        }
-
-        return r;
+    public boolean checkPossibleAttacks(int nextPlayer) {
+        return getPlayerMoves(nextPlayer).isLeeg();
     }
 
     public boolean checkScore(int nextPlayer) {
@@ -76,9 +70,9 @@ public class GameBoard {
 
         for (int y = 0; y < yGroote; y++) {
             for (int x = 0; x < xGroote; x++) {
-                if (bord[x][y].getPlayerNumber() == 1) {
+                if (bord[x][y].getSpelerNummer() == 1) {
                     player1Count++;
-                } else if (bord[x][y].getPlayerNumber() == 2) {
+                } else if (bord[x][y].getSpelerNummer() == 2) {
                     player2Count++;
                 }
             }
@@ -90,8 +84,7 @@ public class GameBoard {
     public boolean isFull() {
         for (int y = 0; y < yGroote; y++) {
             for (int x = 0; x < xGroote; x++) {
-                if (!bord[x][y].isTaken()) return false;
-
+                if (!bord[x][y].isBezet()) return false;
             }
         }
         return true;
@@ -101,7 +94,7 @@ public class GameBoard {
         int count = 0;
         for (int y = 0; y < yGroote; y++) {
             for (int x = 0; x < xGroote; x++) {
-                if (bord[x][y].getPlayerNumber() == playerNumber) {
+                if (bord[x][y].getSpelerNummer() == playerNumber) {
                     count++;
                 }
             }
@@ -109,15 +102,15 @@ public class GameBoard {
         return count;
     }
 
-    public Stapel<Space> getPlayerMoves(int playerNumber) {
-        Stapel<Space> selectAble = new Stapel<>();
+    public Stapel<Plek> getPlayerMoves(int playerNumber) {
+        Stapel<Plek> selectAble = new Stapel<>();
         for (int y = 0; y < yGroote; y++) {
             for (int x = 0; x < xGroote; x++) {
 
-                if (bord[x][y].getPlayerNumber() == playerNumber) {
-                    Space select = new Space(x, y, true, playerNumber);
-                    AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2);
-                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() || !attackVectors.possibleTwoRangeAttackVectors().isEmpty()) {
+                if (bord[x][y].getSpelerNummer() == playerNumber) {
+                    Plek select = new Plek(x, y, true, playerNumber);
+                    AanvalsHoeken aanvalsHoeken = getPossibleAttackSquare(select, 3, 2);
+                    if (!aanvalsHoeken.mogelijkeKleinBereikAanval().isLeeg() || !aanvalsHoeken.mogelijkeVerBereikAanval().isLeeg()) {
                         selectAble.push(select);
                     }
 
@@ -127,14 +120,14 @@ public class GameBoard {
         return selectAble;
     }
 
-    public Stapel<Space> getDeselect(Space selectedSpace, int range) {
-        Stapel<Space> deselect = new Stapel<>();
+    public Stapel<Plek> getDeselect(Plek selectedPlek, int range) {
+        Stapel<Plek> deselect = new Stapel<>();
 
-        for (int y = selectedSpace.y - range - 1; y < selectedSpace.y + range; y++) {
+        for (int y = selectedPlek.y - range - 1; y < selectedPlek.y + range; y++) {
             if (y >= 0 && y < yGroote) {
-                for (int x = selectedSpace.x - range - 1; x < selectedSpace.x + range; x++) {
+                for (int x = selectedPlek.x - range - 1; x < selectedPlek.x + range; x++) {
                     if (x >= 0 && x < xGroote) {
-                        if (!bord[x][y].isTaken()) {
+                        if (!bord[x][y].isBezet()) {
                             deselect.push(bord[x][y]);
                         }
                     }
@@ -145,23 +138,23 @@ public class GameBoard {
     }
 
 
-    public AttackVectors getPossibleAttackDiagonal(Space space, int range, int attackDropOff) {
-        Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
-        Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
+    public AanvalsHoeken getPossibleAttackDiagonal(Plek plek, int range, int attackDropOff) {
+        Stapel<Plek> possibleOneRangeAttackVectors = new Stapel<>();
+        Stapel<Plek> possibleTwoRangeAttackVectors = new Stapel<>();
 
-        for (int x = space.x - (range - 1); x < space.x + range; x++) {
+        for (int x = plek.x - (range - 1); x < plek.x + range; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = space.y - (range - 1); y < space.y + range; y++) {
+                for (int y = plek.y - (range - 1); y < plek.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
-                        if (!bord[x][y].isTaken()) {
-                            int xDif = getDis(space.x, x);
-                            int yDif = getDis(space.y, y);
+                        if (!bord[x][y].isBezet()) {
+                            int xDif = getDis(plek.x, x);
+                            int yDif = getDis(plek.y, y);
 
                             if (xDif + yDif < range) {
                                 if (xDif + yDif < attackDropOff) {
-                                    possibleOneRangeAttackVectors.push(new Space(x, y));
+                                    possibleOneRangeAttackVectors.push(new Plek(x, y));
                                 } else if (xDif + yDif < range) {
-                                    possibleTwoRangeAttackVectors.push(new Space(x, y));
+                                    possibleTwoRangeAttackVectors.push(new Plek(x, y));
                                 }
                             }
                         }
@@ -171,18 +164,18 @@ public class GameBoard {
             }
         }
 
-        return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
+        return new AanvalsHoeken(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public Stapel<Space> getDiagonal(Space space, int range) {
-        Stapel<Space> r = new Stapel<>();
+    public Stapel<Plek> getDiagonal(Plek plek, int range) {
+        Stapel<Plek> r = new Stapel<>();
 
-        for (int x = space.x - range - 1; x < space.x + range; x++) {
+        for (int x = plek.x - range - 1; x < plek.x + range; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = space.y - range - 1; y < space.y + range; y++) {
+                for (int y = plek.y - range - 1; y < plek.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
-                        int xDif = getDis(space.x, x);
-                        int yDif = getDis(space.y, y);
+                        int xDif = getDis(plek.x, x);
+                        int yDif = getDis(plek.y, y);
 
                         if (xDif + yDif < range) {
                             r.push(bord[x][y]);
@@ -195,22 +188,22 @@ public class GameBoard {
         return r;
     }
 
-    public AttackVectors getPossibleAttackSquare(Space space, int range, int attackDropOff) {
-        Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
-        Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
+    public AanvalsHoeken getPossibleAttackSquare(Plek plek, int range, int attackDropOff) {
+        Stapel<Plek> possibleOneRangeAttackVectors = new Stapel<>();
+        Stapel<Plek> possibleTwoRangeAttackVectors = new Stapel<>();
 
-        for (int x = space.x - (range - 1); x < space.x + range; x++) {
+        for (int x = plek.x - (range - 1); x < plek.x + range; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = space.y - (range - 1); y < space.y + range; y++) {
+                for (int y = plek.y - (range - 1); y < plek.y + range; y++) {
                     if (y >= 0 && y < yGroote) {
-                        if (!bord[x][y].isTaken()) {
-                            int xDif = getDis(space.x, x);
-                            int yDif = getDis(space.y, y);
+                        if (!bord[x][y].isBezet()) {
+                            int xDif = getDis(plek.x, x);
+                            int yDif = getDis(plek.y, y);
 
                             if (xDif < attackDropOff && yDif < attackDropOff) {
-                                possibleOneRangeAttackVectors.push(new Space(x, y));
+                                possibleOneRangeAttackVectors.push(new Plek(x, y));
                             } else {
-                                possibleTwoRangeAttackVectors.push(new Space(x, y));
+                                possibleTwoRangeAttackVectors.push(new Plek(x, y));
                             }
 
                         }
@@ -218,15 +211,15 @@ public class GameBoard {
                 }
             }
         }
-        return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
+        return new AanvalsHoeken(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public Stapel<Space> getSquare(Space space, int infectRange) {
-        Stapel<Space> r = new Stapel<>();
+    public Stapel<Plek> getSquare(Plek plek, int infectRange) {
+        Stapel<Plek> r = new Stapel<>();
 
-        for (int x = space.x - (infectRange - 1); x < space.x + infectRange; x++) {
+        for (int x = plek.x - (infectRange - 1); x < plek.x + infectRange; x++) {
             if (x >= 0 && x < xGroote) {
-                for (int y = space.y - (infectRange - 1); y < space.y + infectRange; y++) {
+                for (int y = plek.y - (infectRange - 1); y < plek.y + infectRange; y++) {
                     if (y >= 0 && y < yGroote) {
                         r.push(bord[x][y]);
                     }
@@ -236,7 +229,7 @@ public class GameBoard {
         return r;
     }
 
-    public void move(Space origin, Space select, int attackDropOff, int range, int playerNumber) {
+    public void move(Plek origin, Plek select, int attackDropOff, int range, int playerNumber) {
         int distance = getDis(origin.x, select.x) + getDis(origin.y, select.y);
 
         if (distance < attackDropOff) {
@@ -246,11 +239,11 @@ public class GameBoard {
         }
     }
 
-    public void shortRangeAttack(Space select, int playerNumber) {
+    public void shortRangeAttack(Plek select, int playerNumber) {
         setInfected(getInfected(select, playerNumber), playerNumber);
     }
 
-    public void longRangeAttack(Space origin, Space select, int playerNumber) {
+    public void longRangeAttack(Plek origin, Plek select, int playerNumber) {
         bord[origin.x][origin.y].deselect();
         setInfected(getInfected(select, playerNumber), playerNumber);
     }
@@ -264,16 +257,16 @@ public class GameBoard {
         }
     }
 
-    public Stapel<Space> getInfected(Space select, int playerNumber) {
-        Stapel<Space> spaceSelectSquare = getSquare(select, 2);
-        Stapel<Space> returnStack = new Stapel<>();
+    public Stapel<Plek> getInfected(Plek select, int playerNumber) {
+        Stapel<Plek> spaceSelectSquare = getSquare(select, 2);
+        Stapel<Plek> returnStack = new Stapel<>();
 
-        int size = spaceSelectSquare.getSize();
+        int size = spaceSelectSquare.getGroote();
 
         for (int i = 0; i < size; i++) {
             try {
-                Space t = spaceSelectSquare.pop();
-                if (t.getPlayerNumber() != 0 && t.getPlayerNumber() != playerNumber) {
+                Plek t = spaceSelectSquare.pop();
+                if (t.getSpelerNummer() != 0 && t.getSpelerNummer() != playerNumber) {
                     returnStack.push(t);
                 }
             } catch (UnderflowException e) {
@@ -284,12 +277,12 @@ public class GameBoard {
         return returnStack;
     }
 
-    public void setInfected(Stapel<Space> spaces, int playerNumber) {
-        int s = spaces.getSize();
+    public void setInfected(Stapel<Plek> spaces, int playerNumber) {
+        int s = spaces.getGroote();
 
         for (int i = 0; i < s; i++) {
             try {
-                Space t = spaces.pop();
+                Plek t = spaces.pop();
                 bord[t.x][t.y].take(playerNumber);
             } catch (UnderflowException e) {
                 e.printStackTrace();
@@ -297,26 +290,26 @@ public class GameBoard {
         }
     }
 
-    public void setInfected(Space space, int playerNumber) {
-        bord[space.x][space.y].take(playerNumber);
+    public void setInfected(Plek plek, int playerNumber) {
+        bord[plek.x][plek.y].take(playerNumber);
     }
 
 
-    public Space[][] copyBord() {
-        Space[][] copy = new Space[xGroote][yGroote];
+    public Plek[][] copyBord() {
+        Plek[][] copy = new Plek[xGroote][yGroote];
 
         for (int x = 0; x < xGroote; x++) {
             for (int y = 0; y < yGroote; y++) {
-                if (bord[x][y].isTaken()) {
-                    if (bord[x][y].getPlayerNumber() == 1) {
-                        copy[x][y] = new Space(x, y);
+                if (bord[x][y].isBezet()) {
+                    if (bord[x][y].getSpelerNummer() == 1) {
+                        copy[x][y] = new Plek(x, y);
                         copy[x][y].take(1);
                     } else {
-                        copy[x][y] = new Space(x, y);
+                        copy[x][y] = new Plek(x, y);
                         copy[x][y].take(2);
                     }
                 } else {
-                    copy[x][y] = new Space(x, y);
+                    copy[x][y] = new Plek(x, y);
                 }
             }
         }
@@ -327,8 +320,8 @@ public class GameBoard {
     public void print() {
         for (int x = 0; x < xGroote; x++) {
             for (int y = 0; y < yGroote; y++) {
-                if (bord[x][y].isTaken()) {
-                    if (bord[x][y].getPlayerNumber() == 1) {
+                if (bord[x][y].isBezet()) {
+                    if (bord[x][y].getSpelerNummer() == 1) {
                         System.out.println("X " + x + " Y " + y + " TAKEN PLAYER " + 1);
                     } else {
                         System.out.println("X " + x + " Y " + y + " TAKEN PLAYER " + 2);

@@ -1,20 +1,21 @@
 package mai.scenes.game.aigame;
 
-import mai.scenes.game.logic.Space;
+import mai.scenes.game.logic.Plek;
 
 public class AIMove {
-    private final Space origin, selected;
 
-    public AIMove(Space origin, Space selected) {
-        this.origin = origin;
-        this.selected = selected;
+    private final Plek oorsprong, selectie;
+
+    public AIMove(Plek oorsprong, Plek selectie) {
+        this.oorsprong = oorsprong;
+        this.selectie = selectie;
     }
 
-    public Space getOrigin() {
-        return origin;
+    public Plek getOorsprong() {
+        return oorsprong;
     }
 
-    public Space getSelected() {
-        return selected;
+    public Plek getSelectie() {
+        return selectie;
     }
 }

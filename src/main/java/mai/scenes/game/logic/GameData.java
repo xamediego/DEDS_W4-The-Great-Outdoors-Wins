@@ -1,89 +1,89 @@
 package mai.scenes.game.logic;
 
 import mai.data.AI;
-import mai.data.User;
+import mai.data.Speler;
 
 public class GameData {
 
-    private int playerOneScore, playerTwoScore;
-    private int turnNumber;
+    private int spelerEenScore, spelerTweeScore;
+    private int turnNummer;
 
-    private final User player1;
-    private final AI player2;
+    private final Speler spelerEen;
+    private final AI spelerTwee;
 
-    public boolean player1Finished = false, player2Finished = false;
+    public boolean spelerEenKlaar = false, spelerTweeKlaar = false;
 
-    public User currentPlayer;
-    public GameBoard gameBoard;
+    public Speler huidigeSpeler;
+    public GameBord gameBord;
 
     /**
      * Current player should be set manually
      *
-     * @param playerOneScore default score for player 1
-     * @param playerTwoScore default score for player 2
-     * @param turnNumber     initial turn number
-     * @param player1        data container for player 1
-     * @param player2        data container for player 2
-     * @param gameBoard      game board used by this game data
+     * @param spelerEenScore default score for player 1
+     * @param spelerTweeScore default score for player 2
+     * @param turnNummer     initial turn number
+     * @param spelerEen        data container for player 1
+     * @param spelerTwee        data container for player 2
+     * @param gameBord      game board used by this game data
      */
-    public GameData(int playerOneScore, int playerTwoScore, int turnNumber, User player1, AI player2, GameBoard gameBoard) {
-        this.playerOneScore = playerOneScore;
-        this.playerTwoScore = playerTwoScore;
-        this.turnNumber = turnNumber;
-        this.player1 = player1;
-        this.player2 = player2;
-        this.gameBoard = gameBoard;
+    public GameData(int spelerEenScore, int spelerTweeScore, int turnNummer, Speler spelerEen, AI spelerTwee, GameBord gameBord) {
+        this.spelerEenScore = spelerEenScore;
+        this.spelerTweeScore = spelerTweeScore;
+        this.turnNummer = turnNummer;
+        this.spelerEen = spelerEen;
+        this.spelerTwee = spelerTwee;
+        this.gameBord = gameBord;
     }
 
-    public int getPlayerOneScore() {
-        return playerOneScore;
+    public int getSpelerEenScore() {
+        return spelerEenScore;
     }
 
-    public int getPlayerTwoScore() {
-        return playerTwoScore;
+    public int getSpelerTweeScore() {
+        return spelerTweeScore;
     }
 
-    public int getTurnNumber() {
-        return turnNumber;
+    public int getTurnNummer() {
+        return turnNummer;
     }
 
-    public void increaseTurnNumber() {this.turnNumber++;}
+    public void increaseTurnNumber() {this.turnNummer++;}
 
-    public User getPlayer1() {
-        return player1;
+    public Speler getSpelerEen() {
+        return spelerEen;
     }
 
-    public AI getPlayer2() {
-        return player2;
+    public AI getSpelerTwee() {
+        return spelerTwee;
     }
 
-    public void increasePlayerOneScore(int score) {
-        playerOneScore += score;
+    public void verhoogSpelerEenPunten(int score) {
+        spelerEenScore += score;
     }
 
-    public void increasePlayerTwoScore(int score) {
-        playerTwoScore += score;
+    public void verhoogSpelerTweePunten(int score) {
+        spelerTweeScore += score;
     }
 
     public void decreasePlayerOneScore(int score) {
-        playerOneScore -= score;
+        spelerEenScore -= score;
     }
 
     public void decreasePlayerTwoScore(int score) {
-        playerTwoScore -= score;
+        spelerTweeScore -= score;
     }
 
     @Override
     public String toString() {
         return "GameData{" +
-                "playerOneScore=" + playerOneScore +
-                ", playerTwoScore=" + playerTwoScore +
-                ", turnNumber=" + turnNumber +
-                ", player1=" + player1.getPlayerName() +
-                ", player2=" + player2.getPlayerName() +
-                ", player1Finished=" + player1Finished +
-                ", player2Finished=" + player2Finished +
-                ", currentPlayer=" + currentPlayer.getPlayerName() +
+                "playerOneScore=" + spelerEenScore +
+                ", playerTwoScore=" + spelerTweeScore +
+                ", turnNumber=" + turnNummer +
+                ", player1=" + spelerEen.getNaam() +
+                ", player2=" + spelerTwee.getNaam() +
+                ", player1Finished=" + spelerEenKlaar +
+                ", player2Finished=" + spelerTweeKlaar +
+                ", currentPlayer=" + huidigeSpeler.getNaam() +
                 '}';
     }
 }

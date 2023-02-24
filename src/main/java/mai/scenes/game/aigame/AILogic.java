@@ -2,50 +2,50 @@ package mai.scenes.game.aigame;
 
 import mai.data.AI;
 import mai.datastructs.Stapel;
-import mai.enums.Difficulty;
+import mai.enums.AIType;
 import mai.exceptions.UnderflowException;
-import mai.scenes.game.logic.AttackVectors;
-import mai.scenes.game.logic.GameBoard;
-import mai.scenes.game.logic.Space;
+import mai.scenes.game.logic.AanvalsHoeken;
+import mai.scenes.game.logic.GameBord;
+import mai.scenes.game.logic.Plek;
 
 import java.util.Random;
 
 public class AILogic {
 
-    public AIMove makeMove(GameBoard gameBoard, AI aiPlayer, int aiNumber, int opponentNumber) throws UnderflowException {
-        Stapel<Space> selectAble = gameBoard.getPlayerMoves(aiNumber);
+    public AIMove maakMove(GameBord gameBord, AI aiSpeler, int aiNummer, int tegenstanderNummer) throws UnderflowException {
+        Stapel<Plek> selectAble = gameBord.getPlayerMoves(aiNummer);
 
-        if (aiPlayer.getAiTypes().contains(Difficulty.NORMAL)) {
-            return EasyAI.makeEasyMove(selectAble, gameBoard, aiNumber, opponentNumber, aiPlayer);
-        } else if (aiPlayer.getAiTypes().contains(Difficulty.EASY)) {
-            return EasyAI.makeEasyMove(selectAble, gameBoard, aiNumber, opponentNumber, aiPlayer);
+        if (aiSpeler.getAiTypes().contains(AIType.NORMAL)) {
+            return EasyAI.maakEasyMove(selectAble, gameBord, aiNummer, tegenstanderNummer, aiSpeler);
+        } else if (aiSpeler.getAiTypes().contains(AIType.EASY)) {
+            return EasyAI.maakEasyMove(selectAble, gameBord, aiNummer, tegenstanderNummer, aiSpeler);
         } else {
-            return RandomAI.makeRandomMove(selectAble, gameBoard, aiPlayer);
+            return RandomAI.makeRandomMove(selectAble, gameBord, aiSpeler);
         }
     }
 }
 
 class EasyAI {
-    public static AIMove makeEasyMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
-        return selectMostPointMove(selectAble, gameBoard, aiNumber, opponentNumber, ai);
+    public static AIMove maakEasyMove(Stapel<Plek> selecteerbaar, GameBord gameBord, int aiNummer, int tegenstandNummer, AI aiSpeler) {
+        return selecteerMeestePuntenMove(selecteerbaar, gameBord, aiNummer, tegenstandNummer, aiSpeler);
     }
 
-    public static AIMove selectMostPointMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
-        Stapel<Space> possibleLoses = new Stapel<>();
+    // TODO: 24/02/2023 Implement check voor wanneer ai in gevaar is IE mogelijkverloren > huidige plekken
+    public static AIMove selecteerMeestePuntenMove(Stapel<Plek> selecteerBaar, GameBord gameBord, int aiNummer, int tegenstanderNummer, AI aiSpeler) {
+        Stapel<Plek> mogelijkeVerlorenPlekken = new Stapel<>();
+        Stapel<Plek> mogelijkeSpelerEenMoves = gameBord.getPlayerMoves(tegenstanderNummer);
 
-        Stapel<Space> possiblePlayerOneMove = gameBoard.getPlayerMoves(opponentNumber);
-
-        int s = selectAble.getSize();
+        int s = selecteerBaar.getGroote();
 
         for (int i = 0; i < s; i++) {
             try {
-                if (!possiblePlayerOneMove.isEmpty()) {
-                    Stapel<Space> playerMoveSquare = gameBoard.getInfected(possiblePlayerOneMove.pop(), opponentNumber);
+                if (!mogelijkeSpelerEenMoves.isLeeg()) {
+                    Stapel<Plek> playerMoveSquare = gameBord.getInfected(mogelijkeSpelerEenMoves.pop(), tegenstanderNummer);
 
-                    while (!playerMoveSquare.isEmpty()) {
-                        Space possibleAttack = playerMoveSquare.pop();
-                        if (possibleAttack.getPlayerNumber() == 2 && !possibleLoses.contains(possibleAttack)) {
-                            possibleLoses.push(possibleAttack);
+                    while (!playerMoveSquare.isLeeg()) {
+                        Plek possibleAttack = playerMoveSquare.pop();
+                        if (possibleAttack.getSpelerNummer() == 2 && !mogelijkeVerlorenPlekken.contains(possibleAttack)) {
+                            mogelijkeVerlorenPlekken.push(possibleAttack);
                         }
 
                     }
@@ -55,55 +55,54 @@ class EasyAI {
             }
         }
 
-        if (possibleLoses.getSize() - gameBoard.getPlayerSpaceCount(2) < 1) {
-            return getMostValueAttack(selectAble, gameBoard, aiNumber, ai);
+        if (mogelijkeVerlorenPlekken.getGroote() - gameBord.getPlayerSpaceCount(2) < 1) {
+            return getMeestePuntenMove(selecteerBaar, gameBord, aiNummer, aiSpeler);
         } else {
-            return getMostValueAttack(selectAble, gameBoard, aiNumber, ai);
+            return getMeestePuntenMove(selecteerBaar, gameBord, aiNummer, aiSpeler);
         }
     }
 
-    private static int hVal;
+    private static int hoogsteWaarde;
 
-    private static AIMove getMostValueAttack(Stapel<Space> possiblePlayerMoves, GameBoard gameBoard, int aiNumber, AI ai) {
-        Stapel<AIMove> possibleAttacks = new Stapel<>();
-        hVal = 0;
+    private static AIMove getMeestePuntenMove(Stapel<Plek> possiblePlayerMoves, GameBord gameBord, int aiNummer, AI aiSpeler) {
+        Stapel<AIMove> mogelijkeAanval = new Stapel<>();
+        hoogsteWaarde = 0;
 
-        while (!possiblePlayerMoves.isEmpty()) {
+        while (!possiblePlayerMoves.isLeeg()) {
             try {
-                Space origin = possiblePlayerMoves.pop();
+                Plek origin = possiblePlayerMoves.pop();
 
-                AttackVectors attackVectors = gameBoard.getPossibleAttackSquare(origin, ai.getRange(), ai.getAttackDropOff());
+                AanvalsHoeken aanvalsHoeken = gameBord.getPossibleAttackSquare(origin, aiSpeler.getBereik(), aiSpeler.getMinBereik());
 
-                possibleAttacks = getHighestAttackValue(attackVectors.possibleOneRangeAttackVectors(), gameBoard, origin, possibleAttacks, aiNumber);
-                possibleAttacks = getHighestAttackValue(attackVectors.possibleTwoRangeAttackVectors(), gameBoard, origin, possibleAttacks, aiNumber);
+                mogelijkeAanval = getHoogsteAanvalsPlekkenVoorSelectie(aanvalsHoeken.mogelijkeKleinBereikAanval(), gameBord, origin, mogelijkeAanval, aiNummer);
+                mogelijkeAanval = getHoogsteAanvalsPlekkenVoorSelectie(aanvalsHoeken.mogelijkeVerBereikAanval(), gameBord, origin, mogelijkeAanval, aiNummer);
 
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
 
-        return getRandomMove(possibleAttacks);
+        return getRandomMove(mogelijkeAanval);
     }
 
 
-    private static Stapel<AIMove> getHighestAttackValue(Stapel<Space> attackVectors, GameBoard gameBoard, Space origin, Stapel<AIMove> possibleAttacks, int aiNumber) {
-        Space possibleAttackSelect;
-        System.out.println("AI: " + aiNumber);
-        while (!attackVectors.isEmpty()) {
+    private static Stapel<AIMove> getHoogsteAanvalsPlekkenVoorSelectie(Stapel<Plek> attackVectors, GameBord gameBord, Plek oorsprong, Stapel<AIMove> mogelijkeAanval, int aiNumber) {
+        Plek mogelijkeAanvalSelectie;
+        while (!attackVectors.isLeeg()) {
             try {
 
-                possibleAttackSelect = attackVectors.pop();
+                mogelijkeAanvalSelectie = attackVectors.pop();
 
-                Stapel<Space> possibleAttackCompare = gameBoard.getInfected(possibleAttackSelect, aiNumber);
+                Stapel<Plek> mogelijkeAanvalVergelijk = gameBord.getInfected(mogelijkeAanvalSelectie, aiNumber);
 
 
-                if (possibleAttackCompare.getSize() > hVal) {
-                    hVal = possibleAttackCompare.getSize();
+                if (mogelijkeAanvalVergelijk.getGroote() > hoogsteWaarde) {
+                    hoogsteWaarde = mogelijkeAanvalVergelijk.getGroote();
 
-                    possibleAttacks = new Stapel<>();
-                    possibleAttacks.push(new AIMove(origin, possibleAttackSelect));
-                } else if (possibleAttackCompare.getSize() == hVal) {
-                    possibleAttacks.push(new AIMove(origin, possibleAttackSelect));
+                    mogelijkeAanval = new Stapel<>();
+                    mogelijkeAanval.push(new AIMove(oorsprong, mogelijkeAanvalSelectie));
+                } else if (mogelijkeAanvalVergelijk.getGroote() == hoogsteWaarde) {
+                    mogelijkeAanval.push(new AIMove(oorsprong, mogelijkeAanvalSelectie));
                 }
 
             } catch (UnderflowException e) {
@@ -111,14 +110,13 @@ class EasyAI {
             }
         }
 
-        return possibleAttacks;
+        return mogelijkeAanval;
     }
 
     private static AIMove getRandomMove(Stapel<AIMove> moves) {
         Random random = new Random();
 
         AIMove aiMove = null;
-        System.out.println("M: " + moves.getSize());
 
         try {
             aiMove = moves.peek();
@@ -126,8 +124,8 @@ class EasyAI {
             e.printStackTrace();
         }
 
-        if (moves.getSize() > 1) {
-            int r = random.nextInt(1, moves.getSize());
+        if (moves.getGroote() > 1) {
+            int r = random.nextInt(1, moves.getGroote());
 
             for (int i = 0; i < r; i++) {
                 try {
@@ -144,32 +142,33 @@ class EasyAI {
 }
 
 class RandomAI {
-    public static AIMove makeRandomMove(Stapel<Space> selectAble, GameBoard gameBoard, AI ai) throws UnderflowException {
+
+    public static AIMove makeRandomMove(Stapel<Plek> selectAble, GameBord gameBord, AI ai) throws UnderflowException {
         Random random = new Random();
 
-        int size = selectAble.getSize();
+        int size = selectAble.getGroote();
 
-        Space select = getAttackSpace(selectAble, size);
+        Plek select = getAttackSpace(selectAble, size);
 
-        AttackVectors attackVectors = gameBoard.getPossibleAttackSquare(select, ai.getRange(), ai.getAttackDropOff());
+        AanvalsHoeken aanvalsHoeken = gameBord.getPossibleAttackSquare(select, ai.getBereik(), ai.getMinBereik());
 
-        if (attackVectors.possibleTwoRangeAttackVectors().getSize() < 1) {
-            return getRandomMove(attackVectors.possibleOneRangeAttackVectors(), select, random.nextInt(attackVectors.possibleOneRangeAttackVectors().getSize()));
-        } else if (attackVectors.possibleOneRangeAttackVectors().getSize() < 1) {
-            return getRandomMove(attackVectors.possibleTwoRangeAttackVectors(), select, random.nextInt(attackVectors.possibleTwoRangeAttackVectors().getSize()));
+        if (aanvalsHoeken.mogelijkeVerBereikAanval().getGroote() < 1) {
+            return getRandomMove(aanvalsHoeken.mogelijkeKleinBereikAanval(), select, random.nextInt(aanvalsHoeken.mogelijkeKleinBereikAanval().getGroote()));
+        } else if (aanvalsHoeken.mogelijkeKleinBereikAanval().getGroote() < 1) {
+            return getRandomMove(aanvalsHoeken.mogelijkeVerBereikAanval(), select, random.nextInt(aanvalsHoeken.mogelijkeVerBereikAanval().getGroote()));
         }
 
         if (random.nextInt(2) == 0) {
-            return getRandomMove(attackVectors.possibleOneRangeAttackVectors(), select, random.nextInt(attackVectors.possibleOneRangeAttackVectors().getSize()));
+            return getRandomMove(aanvalsHoeken.mogelijkeKleinBereikAanval(), select, random.nextInt(aanvalsHoeken.mogelijkeKleinBereikAanval().getGroote()));
         } else {
-            return getRandomMove(attackVectors.possibleTwoRangeAttackVectors(), select, random.nextInt(attackVectors.possibleTwoRangeAttackVectors().getSize()));
+            return getRandomMove(aanvalsHoeken.mogelijkeVerBereikAanval(), select, random.nextInt(aanvalsHoeken.mogelijkeVerBereikAanval().getGroote()));
         }
     }
 
-    private static Space getAttackSpace(Stapel<Space> selectAble, int rate) throws UnderflowException {
-        Space select = selectAble.peek();
+    private static Plek getAttackSpace(Stapel<Plek> selectAble, int rate) throws UnderflowException {
+        Plek select = selectAble.peek();
 
-        if (selectAble.getSize() > 1) {
+        if (selectAble.getGroote() > 1) {
             for (int i = 0; i < rate; i++) {
                 select = selectAble.pop();
             }
@@ -178,10 +177,10 @@ class RandomAI {
         return select;
     }
 
-    private static AIMove getRandomMove(Stapel<Space> attackVectors, Space origin, int random) throws UnderflowException {
-        Space select = attackVectors.peek();
+    private static AIMove getRandomMove(Stapel<Plek> attackVectors, Plek origin, int random) throws UnderflowException {
+        Plek select = attackVectors.peek();
 
-        if (attackVectors.getSize() > 1) {
+        if (attackVectors.getGroote() > 1) {
             for (int i = 0; i < random; i++) {
                 select = attackVectors.pop();
             }
@@ -189,5 +188,4 @@ class RandomAI {
 
         return new AIMove(origin, select);
     }
-
 }

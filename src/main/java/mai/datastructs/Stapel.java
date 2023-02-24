@@ -5,89 +5,100 @@ import mai.exceptions.UnderflowException;
 
 public class Stapel<T> {
 
-    private static class Node<T> {
+    private static class Punt<T> {
         T value;
-        Node<T> prev;
+        Punt<T> prev;
     }
 
-    private Node<T> top;
-    private int size;
+    private Punt<T> top;
+    private int groote;
 
-    public boolean isEmpty() {
-        return top == null;
-    }
+    public T push(T waarde) {
+        Punt<T> newVal = new Punt<>();
 
-    public T push(T value) {
-        Node<T> newVal = new Node<>();
-
-        newVal.value = value;
+        newVal.value = waarde;
         newVal.prev = top;
 
         top = newVal;
-        size++;
+        groote++;
 
         return newVal.value;
     }
 
     public T pop() throws UnderflowException {
-        if (isEmpty()) {
+        if (isLeeg()) {
             throw new UnderflowException("Stapel is leeg");
         }
 
         T value = top.value;
         top = top.prev;
-        size--;
+        groote--;
 
         return value;
     }
 
     public T peek() throws UnderflowException {
-        if (isEmpty()) {
+        if (isLeeg()) {
             throw new UnderflowException("Stapel is leeg");
         }
 
         return top.value;
     }
 
-    public boolean contains(T value){
-        Node<T> compareNode = top;
+    public boolean contains(T waarde){
+        Punt<T> comparePunt = top;
 
-        for(int i = 0; i < size; i++){
-            if(value == compareNode.value) return true;
-            compareNode = compareNode.prev;
+        for(int i = 0; i < groote; i++){
+            if(waarde == comparePunt.value) return true;
+            comparePunt = comparePunt.prev;
         }
 
         return false;
     }
 
 
-    public void pushAll(Stapel<T> values){
-        while (!values.isEmpty()){
+    public void pushAll(Stapel<T> waardes){
+        while (!waardes.isLeeg()){
             try {
-                push(values.pop());
+                push(waardes.pop());
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public int getSize(){
-        return size;
+    public int getGroote(){
+        return groote;
+    }
+
+    public boolean isLeeg() {
+        return top == null;
+    }
+
+    public int indexOf(T waarde){
+        Punt<T> comparePunt = top;
+
+        for(int i = (groote - 1); i >= 0; i--){
+            if(waarde == comparePunt.value) return i;
+            comparePunt = comparePunt.prev;
+        }
+
+        return -1;
     }
 
     @Override
     public String toString() {
         StringBuilder returnString = new StringBuilder();
 
-        Node<T> compareNode = top;
+        Punt<T> comparePunt = top;
 
-        for(int i = 0; i < size; i++){
-            if (i <= size - 1) {
-                returnString.append(compareNode.value.toString()).append("/n");
-                compareNode = compareNode.prev;
+        for(int i = 0; i < groote; i++){
+            if (i <= groote - 1) {
+                returnString.append(comparePunt.value.toString()).append("/n");
+                comparePunt = comparePunt.prev;
             } else {
-                returnString.append(compareNode.value.toString());
-                compareNode = compareNode.prev;
+                returnString.append(comparePunt.value.toString());
+                comparePunt = comparePunt.prev;
             }
         }
 

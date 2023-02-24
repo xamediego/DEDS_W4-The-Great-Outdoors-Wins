@@ -15,16 +15,16 @@ public class AIGameController extends GameController {
     }
 
     @Override
-    public void endPlayerMove() {
-        removeSelectAble(gameData.currentPlayer.getPlayerNumber());
+    public void endSpelerBeurt() {
+        verwijderSelecteerBaar(gameData.huidigeSpeler.getSpelerNummer());
 
         int oldP, newP;
 
-        if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            gameData.player1Finished = true;
-            gameData.currentPlayer = gameData.getPlayer2();
+        if (gameData.huidigeSpeler.getSpelerNummer() == 1) {
+            gameData.spelerEenKlaar = true;
+            gameData.huidigeSpeler = gameData.getSpelerTwee();
 
-            addGameHistory(oldGameData);
+            voegGameGeschiedenisToe(oldGameData);
 
             oldP = 1;
             newP = 2;
@@ -32,51 +32,51 @@ public class AIGameController extends GameController {
             oldP = 2;
             newP = 1;
 
-            gameData.player2Finished = true;
-            gameData.currentPlayer = gameData.getPlayer1();
+            gameData.spelerTweeKlaar = true;
+            gameData.huidigeSpeler = gameData.getSpelerEen();
         }
 
         if (checkGameConditions(newP, oldP)) {
-            endGame();
+            stopGame(oldP, newP);
         } else {
-            if (gameData.player1Finished && gameData.player2Finished) endTurn();
+            if (gameData.spelerEenKlaar && gameData.spelerTweeKlaar) eindBeurt();
 
             if (newP == 2) {
                 setNewAIMove();
             } else {
-                setNewPlayerMove();
+                setNieuweSpelerBeurt();
             }
         }
     }
 
     @Override
-    public void setInitialTurn() {
+    public void setBeginBeurt() {
         Random random = new Random();
 
         if (random.nextInt(2) == 0) {
-            gameData.currentPlayer = gameData.getPlayer1();
+            gameData.huidigeSpeler = gameData.getSpelerEen();
 
-            setResetButtonActive(true);
-            setNewPlayerMove();
+            setHerstelButtonActief(true);
+            setNieuweSpelerBeurt();
         } else {
-            gameData.currentPlayer = gameData.getPlayer2();
+            gameData.huidigeSpeler = gameData.getSpelerTwee();
 
-            setResetButtonActive(false);
+            setHerstelButtonActief(false);
             setNewAIMove();
         }
 
-        setTurnInfo();
+        setBeurtInfo();
     }
 
     private void setNewAIMove() {
         try {
-            setTurnGlow(gameData.currentPlayer.getPlayerNumber());
+            setTurnGlow(gameData.huidigeSpeler.getSpelerNummer());
 
-            setCurrentPlayer();
+            setHuigeBeurtSpeler();
 
-            AIMove aiMove = aiLogic.makeMove(this.gameData.gameBoard, gameData.getPlayer2(), 2, 1);
+            AIMove aiMove = aiLogic.maakMove(this.gameData.gameBord, gameData.getSpelerTwee(), 2, 1);
 
-            move(aiMove.getOrigin(), aiMove.getSelected(), gameData.getPlayer2(), gameData.getPlayer2().getRange(), gameData.getPlayer2().getAttackDropOff());
+            beweeg(aiMove.getOorsprong(), aiMove.getSelectie(), gameData.getSpelerTwee(), gameData.getSpelerTwee().getBereik(), gameData.getSpelerTwee().getMinBereik());
         } catch (UnderflowException e) {
             e.printStackTrace();
         }

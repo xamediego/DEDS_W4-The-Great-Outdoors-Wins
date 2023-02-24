@@ -1,9 +1,8 @@
 import mai.datastructs.Stapel;
 import mai.exceptions.UnderflowException;
-import mai.scenes.game.aigame.AILogic;
-import mai.scenes.game.logic.GameBoard;
+import mai.scenes.game.logic.GameBord;
 import mai.scenes.game.logic.GameData;
-import mai.scenes.game.logic.Space;
+import mai.scenes.game.logic.Plek;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +68,7 @@ public class StapelTest {
     void isEmptyTestOne() {
         Stapel<Integer> stapel = new Stapel<>();
 
-        Assertions.assertTrue(stapel.isEmpty());
+        Assertions.assertTrue(stapel.isLeeg());
     }
 
     @Test
@@ -79,7 +78,7 @@ public class StapelTest {
         int value = 1;
         stapel.push(value);
 
-        Assertions.assertFalse(stapel.isEmpty());
+        Assertions.assertFalse(stapel.isLeeg());
     }
 
     @Test
@@ -99,7 +98,7 @@ public class StapelTest {
             stapel.push(i);
         }
 
-        for (int i = 1; i <= count; i++) {
+        while (!stapel.isLeeg()){
             stapel.pop();
         }
 
@@ -150,14 +149,14 @@ public class StapelTest {
         GameData gameData = new GameData(0, 0, 1, null, null, null);
 
         for (int i = 0; i < count; i++) {
-            stapel.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
+            stapel.push(new GameData(0, 0, gameData.getTurnNummer(), null, null, null));
             gameData.increaseTurnNumber();
         }
 
-        Assertions.assertEquals(count, stapel.peek().getTurnNumber());
+        Assertions.assertEquals(count, stapel.peek().getTurnNummer());
 
-        for (int i = gameData.getTurnNumber() - 1; i >= 1; i--) {
-            Assertions.assertEquals(i , stapel.pop().getTurnNumber());
+        for (int i = gameData.getTurnNummer() - 1; i >= 1; i--) {
+            Assertions.assertEquals(i , stapel.pop().getTurnNummer());
         }
 
     }
@@ -170,38 +169,54 @@ public class StapelTest {
         GameData gameData = new GameData(0, 0, 1, null, null, null);
 
         for (int i = 0; i < count; i++) {
-            stapel.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
+            stapel.push(new GameData(0, 0, gameData.getTurnNummer(), null, null, null));
             gameData.increaseTurnNumber();
         }
 
-        Assertions.assertEquals(count, stapel.peek().getTurnNumber());
+        Assertions.assertEquals(count, stapel.peek().getTurnNummer());
+    }
+
+    @Test
+    void StackIndexTest()   {
+        int count = 10;
+
+        Stapel<Integer> stapel = new Stapel<>();
+
+        for (int i = 1; i <= count; i++) {
+            stapel.push(i);
+        }
+
+        Assertions.assertEquals(3, stapel.indexOf(4));
+        Assertions.assertEquals(0, stapel.indexOf(1));
+
+        Assertions.assertEquals(4, stapel.indexOf(5));
     }
 
     @Test
     void gameEndRulesTest(){
-        GameBoard gameBoard = new GameBoard(7,7, new Space[7][7]);
+        GameBord gameBord = new GameBord(7,7, new Plek[7][7]);
 
         for (int y = 0; y < 7; y++) {
 
             for(int x = 0;x < 3; x++){
-                gameBoard.getBord()[x][y] = new Space(x, y, true, 1);
+                gameBord.getBord()[x][y] = new Plek(x, y, true, 1);
             }
 
             for(int x = 3;x < 7; x++){
-                gameBoard.getBord()[x][y] = new Space(x, y, true, 2);
+                gameBord.getBord()[x][y] = new Plek(x, y, true, 2);
             }
 
         }
 
-        Assertions.assertTrue(gameBoard.isFull());
+        Assertions.assertTrue(gameBord.isFull());
 
-        Assertions.assertTrue(gameBoard.checkPossibleAttacks(1,2));
-        Assertions.assertTrue(gameBoard.checkPossibleAttacks(2,1));
+        Assertions.assertTrue(gameBord.checkPossibleAttacks(1));
+        Assertions.assertTrue(gameBord.checkPossibleAttacks(2));
 
-        Assertions.assertFalse(gameBoard.checkScore(1));
-        Assertions.assertTrue(gameBoard.checkScore(2));
+        Assertions.assertFalse(gameBord.checkScore(1));
+        Assertions.assertTrue(gameBord.checkScore(2));
 
-        Assertions.assertTrue(gameBoard.checkBoard(1,2));
-        Assertions.assertTrue(gameBoard.checkBoard(2,1));
+        Assertions.assertTrue(gameBord.checkBoard(1));
+        Assertions.assertTrue(gameBord.checkBoard(2));
     }
 }

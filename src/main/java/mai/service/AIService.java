@@ -1,7 +1,7 @@
 package mai.service;
 
 import mai.data.AI;
-import mai.enums.Difficulty;
+import mai.enums.AIType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ public class AIService {
 
     public static List<AI> aiList = new ArrayList<>();
 
-    private static AI getByDifficulty(Difficulty type) {
+    private static AI getByDifficulty(AIType type) {
         List<AI> aiPlayers = aiList.stream().filter(ai -> ai.getAiTypes().contains(type)).toList();
 
         Random random = new Random();
@@ -19,9 +19,9 @@ public class AIService {
         return aiPlayers.get(random.nextInt(aiPlayers.size()));
     }
 
-    public static AI getAiPlayer(Difficulty type, int pNumber) {
+    public static AI getAiPlayer(AIType type, int pNumber) {
         AI ai = getByDifficulty(type);
-        ai.setPlayerNumber(pNumber);
+        ai.setSpelerNummer(pNumber);
         return ai;
     }
 }

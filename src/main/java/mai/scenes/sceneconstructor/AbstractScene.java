@@ -1,4 +1,4 @@
-package mai.scenes.test;
+package mai.scenes.sceneconstructor;
 
 import mai.enums.FXMLPart;
 

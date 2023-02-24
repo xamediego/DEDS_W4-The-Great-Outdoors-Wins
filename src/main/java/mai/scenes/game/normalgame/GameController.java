@@ -15,16 +15,16 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import mai.JFXApplication;
 import mai.audio.MenuAudio;
-import mai.data.User;
+import mai.data.Speler;
 import mai.datastructs.Stapel;
 import mai.enums.ButtonType;
 import mai.enums.FXMLPart;
-import mai.enums.MatchOverType;
+import mai.enums.GameOverType;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.logic.*;
 import mai.scenes.gameover.GameOverController;
 import mai.scenes.gameover.GameOverScene;
-import mai.scenes.test.AbstractController;
+import mai.scenes.sceneconstructor.AbstractController;
 import mai.audio.AudioPlayer;
 
 import java.net.URL;
@@ -35,9 +35,9 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- Game Data -----
 
-    private final int spaceSize;
+    private final int plekGroote;
     private final Stapel<GameData> gameGeschiedenis;
-    public HBox[] bordRows;
+    public HBox[] bordRijen;
 
     //move gameData to stack?
     public GameData gameData;
@@ -89,10 +89,10 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private Circle player2AvatarCircle;
 
-    public GameController(GameData gameData, int spaceSize) {
+    public GameController(GameData gameData, int plekGroote) {
         this.gameData = gameData;
         this.gameGeschiedenis = new Stapel<>();
-        this.spaceSize = spaceSize;
+        this.plekGroote = plekGroote;
     }
 
     @Override
@@ -100,46 +100,46 @@ public class GameController extends AbstractController implements Initializable 
         AudioPlayer.playAudioFile(MenuAudio.SUMMON);
         configButtons();
 
-        configPlayer1(gameData.getPlayer1());
-        configPlayer2(gameData.getPlayer2());
+        configSpelerEen(gameData.getSpelerEen());
+        configSpelerTwee(gameData.getSpelerTwee());
 
-        configBoard(spaceSize);
-        setInitialTurn();
+        configBord(plekGroote);
+        setBeginBeurt();
 
-        setOldGameData();
+        setOudeGameData();
     }
 
     private void configButtons() {
-        gameOverButton.setOnMouseEntered(select());
-        resetTurnButton.setOnMouseEntered(select());
+        gameOverButton.setOnMouseEntered(selecteerAudio());
+        resetTurnButton.setOnMouseEntered(selecteerAudio());
     }
 
     // ----- methods when player ends his move -----
 
-    protected void endTurn() {
+    protected void eindBeurt() {
         gameData.increaseTurnNumber();
-        gameData.player1Finished = false;
-        gameData.player2Finished = false;
+        gameData.spelerEenKlaar = false;
+        gameData.spelerTweeKlaar = false;
 
-        setTurnInfo();
-        setOldGameData();
+        setBeurtInfo();
+        setOudeGameData();
     }
 
-    private void setOldGameData() {
-        Space[][] bord = gameData.gameBoard.copyBord();
-        GameBoard oldGameBoard = new GameBoard(gameData.gameBoard.xGroote, gameData.gameBoard.yGroote, bord);
+    private void setOudeGameData() {
+        Plek[][] bord = gameData.gameBord.copyBord();
+        GameBord oldGameBord = new GameBord(gameData.gameBord.xGroote, gameData.gameBord.yGroote, bord);
 
-        oldGameData = new GameData(gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber(), gameData.getPlayer1(), gameData.getPlayer2(), oldGameBoard);
+        oldGameData = new GameData(gameData.getSpelerEenScore(), gameData.getSpelerTweeScore(), gameData.getTurnNummer(), gameData.getSpelerEen(), gameData.getSpelerTwee(), oldGameBord);
     }
 
-    public void endPlayerMove() {
-        removeSelectAble(gameData.currentPlayer.getPlayerNumber());
+    public void endSpelerBeurt() {
+        verwijderSelecteerBaar(gameData.huidigeSpeler.getSpelerNummer());
 
         int oldP, newP;
 
-        if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            gameData.player1Finished = true;
-            gameData.currentPlayer = gameData.getPlayer2();
+        if (gameData.huidigeSpeler.getSpelerNummer() == 1) {
+            gameData.spelerEenKlaar = true;
+            gameData.huidigeSpeler = gameData.getSpelerTwee();
 
             newP = 2;
             oldP = 1;
@@ -147,274 +147,274 @@ public class GameController extends AbstractController implements Initializable 
             oldP = 2;
             newP = 1;
 
-            gameData.player2Finished = true;
-            gameData.currentPlayer = gameData.getPlayer1();
+            gameData.spelerTweeKlaar = true;
+            gameData.huidigeSpeler = gameData.getSpelerEen();
         }
 
         if (checkGameConditions(newP, oldP)) {
-            endGame();
+            stopGame(oldP, newP);
         } else {
-            if (gameData.player1Finished && gameData.player2Finished) endTurn();
-            setNewPlayerMove();
+            if (gameData.spelerEenKlaar && gameData.spelerTweeKlaar) eindBeurt();
+            setNieuweSpelerBeurt();
         }
     }
 
-    protected void setNewPlayerMove() {
-        setTurnGlow(gameData.currentPlayer.getPlayerNumber());
+    protected void setNieuweSpelerBeurt() {
+        setTurnGlow(gameData.huidigeSpeler.getSpelerNummer());
 
-        setCurrentPlayer();
-        setSelectAble();
+        setHuigeBeurtSpeler();
+        setSelecteerBaar();
     }
 
     protected boolean checkGameConditions(int newP, int oldP) {
-        return gameData.gameBoard.checkBoard(newP, oldP);
+        return gameData.gameBord.checkBoard(newP);
     }
 
-    protected void addGameHistory(GameData data) {
-        data.currentPlayer = gameData.currentPlayer;
+    protected void voegGameGeschiedenisToe(GameData data) {
+        data.huidigeSpeler = gameData.huidigeSpeler;
         gameGeschiedenis.push(data);
     }
 
     // ----- make the tiles for the current player selectable -----
 
-    private void setSelectAble() {
-        Stapel<Space> selectAbles = gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber());
+    private void setSelecteerBaar() {
+        Stapel<Plek> selectAbles = gameData.gameBord.getPlayerMoves(gameData.huidigeSpeler.getSpelerNummer());
 
-        int size = selectAbles.getSize();
+        int size = selectAbles.getGroote();
         for (int i = 0; i < size; i++) {
             try {
-                makeSelectAble(selectAbles.pop());
+                maakSelecteerBaar(selectAbles.pop());
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void makeSelectAble(Space space) {
-        bordRows[space.y].getChildren().get(space.x).getStyleClass().add(ButtonType.SELECT.getType());
-        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(showPossible());
+    private void maakSelecteerBaar(Plek plek) {
+        bordRijen[plek.y].getChildren().get(plek.x).getStyleClass().add(ButtonType.SELECT.getType());
+        bordRijen[plek.y].getChildren().get(plek.x).setOnMouseClicked(laatMogelijkHedenZien());
     }
 
-    protected void removeSelectAble(int playerNumber) {
-        for (int y = 0; y < gameData.gameBoard.yGroote; y++) {
-            for (int x = 0; x < gameData.gameBoard.xGroote; x++) {
-                if (gameData.gameBoard.getBord()[x][y].getPlayerNumber() == playerNumber)
-                    bordRows[y].getChildren().get(x).getStyleClass().clear();
-                bordRows[y].getChildren().get(x).setOnMouseClicked(null);
+    protected void verwijderSelecteerBaar(int spelerNummer) {
+        for (int y = 0; y < gameData.gameBord.yGroote; y++) {
+            for (int x = 0; x < gameData.gameBord.xGroote; x++) {
+                if (gameData.gameBord.getBord()[x][y].getSpelerNummer() == spelerNummer)
+                    bordRijen[y].getChildren().get(x).getStyleClass().clear();
+                bordRijen[y].getChildren().get(x).setOnMouseClicked(null);
             }
         }
     }
 
     // ----- setting selectable tiles -----
 
-    private Space selected;
+    private Plek selected;
 
-    private EventHandler<? super MouseEvent> showPossible() {
+    private EventHandler<? super MouseEvent> laatMogelijkHedenZien() {
         return (EventHandler<MouseEvent>) event -> {
-            SpaceBox space = (SpaceBox) event.getSource();
+            PlekHBox space = (PlekHBox) event.getSource();
             if (selected != null && (selected.y == space.y && selected.x == space.x)) {
                 AudioPlayer.playAudioFile(MenuAudio.CANCEL_AUDIO);
 
                 space.getStyleClass().clear();
-                deselect(gameData.gameBoard.getBord()[space.x][space.y]);
+                deSelecteer(gameData.gameBord.getBord()[space.x][space.y]);
 
                 selected = null;
             } else {
-                if (selected != null) deselect(selected);
+                if (selected != null) deSelecteer(selected);
                 AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
                 space.getStyleClass().add("spaceSelected");
-                selected = gameData.gameBoard.getBord()[space.x][space.y];
+                selected = gameData.gameBord.getBord()[space.x][space.y];
 
-                AttackVectors attackVectors = gameData.gameBoard.getPossibleAttackSquare(new Space(space.x, space.y), gameData.currentPlayer.getRange(), gameData.currentPlayer.getAttackDropOff());
+                AanvalsHoeken aanvalsHoeken = gameData.gameBord.getPossibleAttackSquare(new Plek(space.x, space.y), gameData.huidigeSpeler.getBereik(), gameData.huidigeSpeler.getMinBereik());
 
-                showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors(), space);
-                showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors(), space);
+                laatKortBereikZien(aanvalsHoeken.mogelijkeKleinBereikAanval(), space);
+                laatLangBereikZien(aanvalsHoeken.mogelijkeVerBereikAanval(), space);
             }
         };
     }
 
-    private void showShortRangeAttack(Stapel<Space> attackVectors, SpaceBox origin) {
-        while (!attackVectors.isEmpty()) {
+    private void laatKortBereikZien(Stapel<Plek> aanvalsHoeken, PlekHBox oorsprong) {
+        while (!aanvalsHoeken.isLeeg()) {
             try {
-                showPossibleBlock(attackVectors.pop(), ButtonType.SHORTRANGE.getType(), moveEvent(gameData.gameBoard.getBord()[origin.x][origin.y]));
+                laatHuidigeBlokkenZien(aanvalsHoeken.pop(), ButtonType.SHORTRANGE.getType(), moveEvent(gameData.gameBord.getBord()[oorsprong.x][oorsprong.y]));
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void showLongRangeAttack(Stapel<Space> attackVectors, SpaceBox origin) {
-        while (!attackVectors.isEmpty()) {
+    private void laatLangBereikZien(Stapel<Plek> aanvalsHoeken, PlekHBox oorsprong) {
+        while (!aanvalsHoeken.isLeeg()) {
             try {
-                showPossibleBlock(attackVectors.pop(), ButtonType.LONGRANGE.getType(), moveEvent(gameData.gameBoard.getBord()[origin.x][origin.y]));
+                laatHuidigeBlokkenZien(aanvalsHoeken.pop(), ButtonType.LONGRANGE.getType(), moveEvent(gameData.gameBord.getBord()[oorsprong.x][oorsprong.y]));
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void showPossibleBlock(Space space, String classStyle, EventHandler<? super MouseEvent> mouseEvent) {
-        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(mouseEvent);
-        bordRows[space.y].getChildren().get(space.x).setOnMouseEntered(move());
+    private void laatHuidigeBlokkenZien(Plek plek, String classStyle, EventHandler<? super MouseEvent> mouseEvent) {
+        bordRijen[plek.y].getChildren().get(plek.x).setOnMouseClicked(mouseEvent);
+        bordRijen[plek.y].getChildren().get(plek.x).setOnMouseEntered(beweeg());
 
-        bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
-        bordRows[space.y].getChildren().get(space.x).getStyleClass().add(classStyle);
+        bordRijen[plek.y].getChildren().get(plek.x).getStyleClass().clear();
+        bordRijen[plek.y].getChildren().get(plek.x).getStyleClass().add(classStyle);
     }
 
-    private void deselect(Space selectedSpace) {
-        bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().clear();
-        bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().add("spaceSelect");
+    private void deSelecteer(Plek selectedPlek) {
+        bordRijen[selectedPlek.y].getChildren().get(selectedPlek.x).getStyleClass().clear();
+        bordRijen[selectedPlek.y].getChildren().get(selectedPlek.x).getStyleClass().add("spaceSelect");
 
-        Stapel<Space> deselectAbles = gameData.gameBoard.getDeselect(selectedSpace, 3);
+        Stapel<Plek> deselectAbles = gameData.gameBord.getDeselect(selectedPlek, 3);
 
-        deselectSelectAble(deselectAbles);
+        deselecteerHuidigeSelectie(deselectAbles);
     }
 
-    private void deselectSelectAble(Stapel<Space> deselectAbles) {
-        while (!deselectAbles.isEmpty()) {
+    private void deselecteerHuidigeSelectie(Stapel<Plek> deselectAbles) {
+        while (!deselectAbles.isLeeg()) {
             try {
-                deselectBlock(deselectAbles.pop());
+                deselecteerPlek(deselectAbles.pop());
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void deselectBlock(Space space) {
-        bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
-        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(null);
-        bordRows[space.y].getChildren().get(space.x).setOnMouseEntered(null);
+    private void deselecteerPlek(Plek plek) {
+        bordRijen[plek.y].getChildren().get(plek.x).getStyleClass().clear();
+        bordRijen[plek.y].getChildren().get(plek.x).setOnMouseClicked(null);
+        bordRijen[plek.y].getChildren().get(plek.x).setOnMouseEntered(null);
     }
 
     // ----- movement methods -----
-    public EventHandler<? super MouseEvent> moveEvent(Space origin) {
+    public EventHandler<? super MouseEvent> moveEvent(Plek origin) {
         return (EventHandler<MouseEvent>) event -> {
             AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
             selected = null;
-            SpaceBox selected = (SpaceBox) event.getSource();
+            PlekHBox selected = (PlekHBox) event.getSource();
 
-            bordRows[selected.y].getChildren().get(selected.x).setOnMouseEntered(null);
+            bordRijen[selected.y].getChildren().get(selected.x).setOnMouseEntered(null);
 
-            move(origin, gameData.gameBoard.getBord()[selected.x][selected.y], gameData.currentPlayer, gameData.currentPlayer.getAttackDropOff(), gameData.currentPlayer.getRange());
+            beweeg(origin, gameData.gameBord.getBord()[selected.x][selected.y], gameData.huidigeSpeler, gameData.huidigeSpeler.getMinBereik(), gameData.huidigeSpeler.getBereik());
         };
     }
 
-    public void move(Space origin, Space selected, User currentUser, int attackDropOff, int range) {
-        int xDif = gameData.gameBoard.getDis(origin.x, selected.x);
-        int yDif = gameData.gameBoard.getDis(origin.y, selected.y);
+    public void beweeg(Plek origin, Plek selected, Speler currentSpeler, int attackDropOff, int range) {
+        int xDif = gameData.gameBord.getDis(origin.x, selected.x);
+        int yDif = gameData.gameBord.getDis(origin.y, selected.y);
 
         if (xDif < attackDropOff && yDif < attackDropOff) {
-            deselect(gameData.gameBoard.getBord()[origin.x][origin.y]);
-            addPoint(1);
-            shortRangeAttack(selected, currentUser);
+            deSelecteer(gameData.gameBord.getBord()[origin.x][origin.y]);
+            voegPuntenToe(1);
+            kleineAfstandsAanval(selected, currentSpeler);
         } else if (xDif < range && yDif < range) {
-            longRangeAttack(origin, selected, currentUser);
-            deselect(gameData.gameBoard.getBord()[origin.x][origin.y]);
+            langeAfstandsAanval(origin, selected, currentSpeler);
+            deSelecteer(gameData.gameBord.getBord()[origin.x][origin.y]);
         }
 
     }
 
-    public void shortRangeAttack(Space select, User currentUser) {
-        SpaceBox newSpace = (SpaceBox) bordRows[select.y].getChildren().get(select.x);
+    public void kleineAfstandsAanval(Plek select, Speler currentSpeler) {
+        PlekHBox newSpace = (PlekHBox) bordRijen[select.y].getChildren().get(select.x);
 
         newSpace.getStyleClass().clear();
 
-        setInfected(select, currentUser.getPlayerNumber());
+        setInfected(select, currentSpeler.getSpelerNummer());
 
-        gameData.gameBoard.getBord()[select.x][select.y].take(currentUser.getPlayerNumber());
+        gameData.gameBord.getBord()[select.x][select.y].take(currentSpeler.getSpelerNummer());
 
-        setColour(newSpace, currentUser.getPlayerColour());
-        setSpaceLabel(currentUser.getPlayerNumber(), newSpace);
+        setKleur(newSpace, currentSpeler.getSpelerKleur());
+        setPlekLabel(currentSpeler.getSpelerNummer(), newSpace);
 
-        endPlayerMove();
+        endSpelerBeurt();
     }
 
-    public void longRangeAttack(Space origin, Space select, User currentUser) {
-        SpaceBox oldSpace = (SpaceBox) bordRows[origin.y].getChildren().get(origin.x);
-        SpaceBox newSpace = (SpaceBox) bordRows[select.y].getChildren().get(select.x);
+    public void langeAfstandsAanval(Plek oorsprongPlek, Plek select, Speler currentSpeler) {
+        PlekHBox oorsprong = (PlekHBox) bordRijen[oorsprongPlek.y].getChildren().get(oorsprongPlek.x);
+        PlekHBox selectie = (PlekHBox) bordRijen[select.y].getChildren().get(select.x);
 
-        removeColour((SpaceBox) bordRows[origin.y].getChildren().get(origin.x));
-        gameData.gameBoard.getBord()[origin.x][origin.y].deselect();
+        verwijderKleur((PlekHBox) bordRijen[oorsprongPlek.y].getChildren().get(oorsprongPlek.x));
+        gameData.gameBord.getBord()[oorsprongPlek.x][oorsprongPlek.y].deselect();
 
-        setInfected(select, currentUser.getPlayerNumber());
+        setInfected(select, currentSpeler.getSpelerNummer());
 
-        gameData.gameBoard.getBord()[select.x][select.y].take(currentUser.getPlayerNumber());
-        gameData.gameBoard.getBord()[oldSpace.x][oldSpace.y].deselect();
+        gameData.gameBord.getBord()[select.x][select.y].take(currentSpeler.getSpelerNummer());
+        gameData.gameBord.getBord()[oorsprong.x][oorsprong.y].deselect();
 
-        setColour(newSpace, currentUser.getPlayerColour());
-        setSpaceLabel(currentUser.getPlayerNumber(), newSpace);
+        setKleur(selectie, currentSpeler.getSpelerKleur());
+        setPlekLabel(currentSpeler.getSpelerNummer(), selectie);
 
-        removeColour(oldSpace);
-        removeSpaceLabel(oldSpace);
+        verwijderKleur(oorsprong);
+        verwijderPlekLabel(oorsprong);
 
-        endPlayerMove();
+        endSpelerBeurt();
     }
 
-    private void setInfected(Space select, int playerNumber) {
-        Stapel<Space> a = gameData.gameBoard.getInfected(select, playerNumber);
+    private void setInfected(Plek select, int spelerNummer) {
+        Stapel<Plek> a = gameData.gameBord.getInfected(select, spelerNummer);
 
-        while (!a.isEmpty()) {
+        while (!a.isLeeg()) {
             try {
-                Space t = a.pop();
-                gameData.gameBoard.setInfected(t, playerNumber);
+                Plek t = a.pop();
+                gameData.gameBord.setInfected(t, spelerNummer);
 
-                addPoint(1);
-                removePoint(1);
+                voegPuntenToe(1);
+                verwijderPunt(1);
 
-                setColour((SpaceBox) bordRows[t.y].getChildren().get(t.x), gameData.currentPlayer.getPlayerColour());
-                setSpaceLabel(gameData.currentPlayer.getPlayerNumber(), (SpaceBox) bordRows[t.y].getChildren().get(t.x));
+                setKleur((PlekHBox) bordRijen[t.y].getChildren().get(t.x), gameData.huidigeSpeler.getSpelerKleur());
+                setPlekLabel(gameData.huidigeSpeler.getSpelerNummer(), (PlekHBox) bordRijen[t.y].getChildren().get(t.x));
             } catch (UnderflowException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void addPoint(int points) {
-        if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            gameData.increasePlayerOneScore(points);
+    private void voegPuntenToe(int punten) {
+        if (gameData.huidigeSpeler.getSpelerNummer() == 1) {
+            gameData.verhoogSpelerEenPunten(punten);
         } else {
-            gameData.increasePlayerTwoScore(points);
+            gameData.verhoogSpelerTweePunten(punten);
         }
 
-        updatePointLabel();
+        updatePuntenLabel();
     }
 
-    private void removePoint(int points) {
-        if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            gameData.decreasePlayerTwoScore(points);
+    private void verwijderPunt(int punten) {
+        if (gameData.huidigeSpeler.getSpelerNummer() == 1) {
+            gameData.decreasePlayerTwoScore(punten);
         } else {
-            gameData.decreasePlayerOneScore(points);
+            gameData.decreasePlayerOneScore(punten);
         }
 
-        updatePointLabel();
+        updatePuntenLabel();
     }
 
-    private void updatePointLabel() {
-        player1Score.setText(String.valueOf(gameData.getPlayerOneScore()));
-        player2Score.setText(String.valueOf(gameData.getPlayerTwoScore()));
+    private void updatePuntenLabel() {
+        player1Score.setText(String.valueOf(gameData.getSpelerEenScore()));
+        player2Score.setText(String.valueOf(gameData.getSpelerTweeScore()));
     }
 
     // ----- configuring initial user details -----
 
-    private void configPlayer1(User user) {
-        configAvatar(user, player1Avatar, player1AvatarCircle);
-        configLabel(user, player1Label);
+    private void configSpelerEen(Speler speler) {
+        configAvatar(speler, player1Avatar, player1AvatarCircle);
+        configLabel(speler, player1Label);
     }
 
-    private void configPlayer2(User user) {
-        configAvatar(user, player2Avatar, player2AvatarCircle);
-        configLabel(user, player2Label);
+    private void configSpelerTwee(Speler speler) {
+        configAvatar(speler, player2Avatar, player2AvatarCircle);
+        configLabel(speler, player2Label);
     }
 
     // ----- configuring initial avatars -----
 
-    private void configAvatar(User user, ImageView avatarView, Circle playerAvatarCircle) {
-        if (user.getProfilePictureUrl() != null) {
-            setAvatar(avatarView, new Image(user.getProfilePictureUrl()), playerAvatarCircle, user.getPlayerColour());
+    private void configAvatar(Speler speler, ImageView avatarView, Circle playerAvatarCircle) {
+        if (speler.getProfilePictureUrl() != null) {
+            setAvatar(avatarView, new Image(speler.getProfilePictureUrl()), playerAvatarCircle, speler.getSpelerKleur());
         } else {
-            setAvatar(avatarView, new Image("/images/app/defaultProfImage.png"), playerAvatarCircle, user.getPlayerColour());
+            setAvatar(avatarView, new Image("/images/app/defaultProfImage.png"), playerAvatarCircle, speler.getSpelerKleur());
         }
     }
 
@@ -432,58 +432,58 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- configuring initial player names -----
 
-    private void configLabel(User user, Label label) {
-        label.setText(user.getPlayerName());
-        label.setStyle("-fx-text-fill: " + user.getPlayerColour());
+    private void configLabel(Speler speler, Label label) {
+        label.setText(speler.getNaam());
+        label.setStyle("-fx-text-fill: " + speler.getSpelerKleur());
     }
 
     // ----- configuring initial board -----
 
-    private void configBoard(int blockSize) {
-        gameData.gameBoard.setInitialOccupied(2);
-        drawBoard(gameData, blockSize);
+    private void configBord(int blockSize) {
+        gameData.gameBord.setInitialOccupied(2);
+        maakBord(gameData, blockSize);
     }
 
-    private void drawBoard(GameData data, int blockSize) {
-        bordRows = new HBox[data.gameBoard.yGroote];
+    private void maakBord(GameData data, int blokGroote) {
+        bordRijen = new HBox[data.gameBord.yGroote];
 
-        for (int y = 0; y < data.gameBoard.yGroote; y++) {
+        for (int y = 0; y < data.gameBord.yGroote; y++) {
             HBox row = new HBox();
-            for (int x = 0; x < data.gameBoard.xGroote; x++) {
-                SpaceBox spaceBox = new SpaceBox(x, y, blockSize);
+            for (int x = 0; x < data.gameBord.xGroote; x++) {
+                PlekHBox plekHBox = new PlekHBox(x, y, blokGroote);
 
-                setBoxBorder(x, y, spaceBox);
+                setPlekHBoxBorder(x, y, plekHBox);
 
-                if (data.gameBoard.getBord()[x][y].isTaken()) {
-                    if (data.gameBoard.getBord()[x][y].getPlayerNumber() == 1) {
-                        setColour(spaceBox, data.getPlayer1().getPlayerColour());
-                        setSpaceLabel(1, spaceBox);
+                if (data.gameBord.getBord()[x][y].isBezet()) {
+                    if (data.gameBord.getBord()[x][y].getSpelerNummer() == 1) {
+                        setKleur(plekHBox, data.getSpelerEen().getSpelerKleur());
+                        setPlekLabel(1, plekHBox);
                     } else {
-                        setColour(spaceBox, data.getPlayer2().getPlayerColour());
-                        setSpaceLabel(2, spaceBox);
+                        setKleur(plekHBox, data.getSpelerTwee().getSpelerKleur());
+                        setPlekLabel(2, plekHBox);
                     }
                 }
 
-                row.getChildren().add(spaceBox);
+                row.getChildren().add(plekHBox);
             }
-            bordRows[y] = row;
+            bordRijen[y] = row;
         }
 
         if (!bordColumnBox.getChildren().isEmpty()) bordColumnBox.getChildren().clear();
 
-        bordColumnBox.getChildren().addAll(bordRows);
+        bordColumnBox.getChildren().addAll(bordRijen);
     }
 
-    private void setBoxBorder(int x, int y, Node space) {
-        if (gameData.gameBoard.xGroote - 1 != x && y != 0) {
+    private void setPlekHBoxBorder(int x, int y, Node space) {
+        if (gameData.gameBord.xGroote - 1 != x && y != 0) {
             space.setStyle(
                     "-fx-border-width: 2 2 0 0;\n" +
                             "-fx-border-color: #242526;");
-        } else if (gameData.gameBoard.xGroote - 1 != x) {
+        } else if (gameData.gameBord.xGroote - 1 != x) {
             space.setStyle(
                     "-fx-border-width: 0 2 0 0;\n" +
                             "-fx-border-color: #242526;");
-        } else if (gameData.gameBoard.xGroote - 1 == x && y != 0) {
+        } else if (gameData.gameBord.xGroote - 1 == x && y != 0) {
             space.setStyle(
                     "-fx-border-width: 2 0 0 0;\n" +
                             "-fx-border-color: #242526;");
@@ -494,74 +494,74 @@ public class GameController extends AbstractController implements Initializable 
         }
     }
 
-    private void setSpaceLabel(int playerNumber, SpaceBox spaceBox) {
-        if (playerNumber == 1) {
-            spaceBox.setText("H");
+    private void setPlekLabel(int spelerNummer, PlekHBox plekHBox) {
+        if (spelerNummer == 1) {
+            plekHBox.setText("H");
         } else {
-            spaceBox.setText("B");
+            plekHBox.setText("B");
         }
     }
 
-    private void removeSpaceLabel(SpaceBox spaceBox) {
-        spaceBox.setText("");
+    private void verwijderPlekLabel(PlekHBox plekHBox) {
+        plekHBox.setText("");
     }
 
-    private void setColour(SpaceBox spaceBox, String color) {
-        String style = spaceBox.getStyle();
-        String newStyle = "";
+    private void setKleur(PlekHBox plekHBox, String color) {
+        String style = plekHBox.getStyle();
+        String nieuweStijl = "";
 
         if (!style.isEmpty()) {
             String[] t = style.split("((?=;))");
-            newStyle = t[0] + t[1] + ";";
+            nieuweStijl = t[0] + t[1] + ";";
         }
 
-        spaceBox.setStyle(newStyle + "\n-fx-background-color: #" + "B0" + color.substring(3) + ";");
+        plekHBox.setStyle(nieuweStijl + "\n-fx-background-color: #" + "B0" + color.substring(3) + ";");
     }
 
-    private void removeColour(SpaceBox spaceBox) {
-        String style = spaceBox.getStyle();
-        String newStyle = "";
+    private void verwijderKleur(PlekHBox plekHBox) {
+        String style = plekHBox.getStyle();
+        String nieuweStijl = "";
 
         if (!style.isEmpty()) {
             String[] t = style.split("((?=;))");
-            newStyle = t[0] + t[1] + ";";
+            nieuweStijl = t[0] + t[1] + ";";
         }
 
-        spaceBox.setStyle(newStyle);
+        plekHBox.setStyle(nieuweStijl);
     }
 
 
     // ----- configuring initial turn -----
 
-    public void setInitialTurn() {
+    public void setBeginBeurt() {
         Random random = new Random();
 
         if (random.nextInt(2) == 0) {
-            gameData.currentPlayer = gameData.getPlayer1();
-            setResetButtonActive(true);
-            setNewPlayerMove();
+            gameData.huidigeSpeler = gameData.getSpelerEen();
+            setHerstelButtonActief(true);
+            setNieuweSpelerBeurt();
         } else {
-            gameData.currentPlayer = gameData.getPlayer2();
-            setResetButtonActive(false);
-            setNewPlayerMove();
+            gameData.huidigeSpeler = gameData.getSpelerTwee();
+            setHerstelButtonActief(false);
+            setNieuweSpelerBeurt();
         }
 
-        setTurnInfo();
+        setBeurtInfo();
     }
 
-    protected void setTurnInfo() {
-        turnInfo.setText("Turn " + gameData.getTurnNumber() + " | ");
+    protected void setBeurtInfo() {
+        turnInfo.setText("Turn " + gameData.getTurnNummer() + " | ");
     }
 
-    protected void setCurrentPlayer() {
-        currentPlayerLabel.setText(gameData.currentPlayer.getPlayerName());
+    protected void setHuigeBeurtSpeler() {
+        currentPlayerLabel.setText(gameData.huidigeSpeler.getNaam());
 
-        if (gameData.currentPlayer.getPlayerNumber() == 1) {
-            addTurnGlow(player1Label, player1AvatarCircle);
-            setResetButtonActive(true);
+        if (gameData.huidigeSpeler.getSpelerNummer() == 1) {
+            addBeurtGlow(player1Label, player1AvatarCircle);
+            setHerstelButtonActief(true);
         } else {
-            addTurnGlow(player2Label, player2AvatarCircle);
-            setResetButtonActive(false);
+            addBeurtGlow(player2Label, player2AvatarCircle);
+            setHerstelButtonActief(false);
         }
     }
 
@@ -569,15 +569,15 @@ public class GameController extends AbstractController implements Initializable 
 
     protected void setTurnGlow(int playerNumber) {
         if (playerNumber == 1) {
-            addTurnGlow(player1Label, player1AvatarCircle);
-            removeTurnGlow(player2Label, player2AvatarCircle);
+            addBeurtGlow(player1Label, player1AvatarCircle);
+            verwijderBeurtGlow(player2Label, player2AvatarCircle);
         } else {
-            addTurnGlow(player2Label, player2AvatarCircle);
-            removeTurnGlow(player1Label, player1AvatarCircle);
+            addBeurtGlow(player2Label, player2AvatarCircle);
+            verwijderBeurtGlow(player1Label, player1AvatarCircle);
         }
     }
 
-    private void addTurnGlow(Label playerLabel, Circle avatarCircle) {
+    private void addBeurtGlow(Label playerLabel, Circle avatarCircle) {
         Bloom bloom = new Bloom();
         bloom.setThreshold(0.01);
 
@@ -585,7 +585,7 @@ public class GameController extends AbstractController implements Initializable 
         avatarCircle.setEffect(bloom);
     }
 
-    private void removeTurnGlow(Label playerLabel, Circle avatarCircle) {
+    private void verwijderBeurtGlow(Label playerLabel, Circle avatarCircle) {
         playerLabel.setEffect(null);
         avatarCircle.setEffect(null);
     }
@@ -594,30 +594,30 @@ public class GameController extends AbstractController implements Initializable 
     // pops the new turn data and peeks for the previous turn data
     @FXML
     private void resetTurn() throws UnderflowException {
-        if (!gameGeschiedenis.isEmpty()) {
+        if (!gameGeschiedenis.isLeeg()) {
             AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
-            deselectSelectAble(gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber()));
+            deselecteerHuidigeSelectie(gameData.gameBord.getPlayerMoves(gameData.huidigeSpeler.getSpelerNummer()));
 
-            resetTwistedGame(gameGeschiedenis.pop());
+            resetBeurtGame(gameGeschiedenis.pop());
         }
     }
 
-    private void resetTwistedGame(GameData data) {
+    private void resetBeurtGame(GameData data) {
         gameData = data;
-        drawBoard(data, 75);
+        maakBord(data, 75);
 
-        setOldGameData();
+        setOudeGameData();
 
-        setTurnInfo();
-        updatePointLabel();
+        setBeurtInfo();
+        updatePuntenLabel();
 
-        gameData.currentPlayer = gameData.getPlayer1();
-        setNewPlayerMove();
+        gameData.huidigeSpeler = gameData.getSpelerEen();
+        setNieuweSpelerBeurt();
     }
 
-    protected void setResetButtonActive(boolean active) {
-        if (!gameGeschiedenis.isEmpty()) {
+    protected void setHerstelButtonActief(boolean active) {
+        if (!gameGeschiedenis.isLeeg()) {
             resetTurnButton.setVisible(active);
             resetTurnButton.setDisable(!active);
         } else {
@@ -632,31 +632,53 @@ public class GameController extends AbstractController implements Initializable 
     private void endGameEvent() {
         AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
-        endGame();
-    }
-
-    protected void endGame() {
-        FXMLPart gameOver = FXMLPart.GAMEOVER;
-        if (gameData.getPlayerOneScore() > gameData.getPlayerTwoScore()) {
-            GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P1, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-            JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
-        } else if (gameData.getPlayerTwoScore() > gameData.getPlayerOneScore()) {
-            GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P2, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-            JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
+        if(gameData.huidigeSpeler.getSpelerNummer() == 1){
+            stopGame(1,2);
         } else {
-            GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.DRAW, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-            JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
+            stopGame(2,1);
         }
     }
 
+    protected void stopGame(int oldP, int newP) {
+        if (gameData.getSpelerEenScore() > gameData.getSpelerTweeScore()) {
+            spelerEenWin();
+        } else if (gameData.getSpelerTweeScore() > gameData.getSpelerEenScore()) {
+            spelerTweeWin();
+        } else {
+            if (gameData.gameBord.checkBoard(newP)) {
+                if(oldP == 1){
+                    spelerEenWin();
+                } else if(oldP == 2) {
+                    spelerTweeWin();
+                }
+            } else {
+                gelijkSpel();
+            }
+        }
+    }
+
+    private void spelerEenWin(){
+        GameOverController gameOverController = new GameOverController(gameData.getSpelerEen(), gameData.getSpelerTwee(), GameOverType.P1, gameData.getSpelerEenScore(), gameData.getSpelerTweeScore());
+        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    }
+
+    private void spelerTweeWin(){
+        GameOverController gameOverController = new GameOverController(gameData.getSpelerEen(), gameData.getSpelerTwee(), GameOverType.P2, gameData.getSpelerEenScore(), gameData.getSpelerTweeScore());
+        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    }
+
+    private void gelijkSpel(){
+        GameOverController gameOverController = new GameOverController(gameData.getSpelerEen(), gameData.getSpelerTwee(), GameOverType.GELEIKSPEL, gameData.getSpelerEenScore(), gameData.getSpelerTweeScore());
+        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    }
 
     // ----- for adding sounds? -----
 
-    private EventHandler<? super MouseEvent> select() {
+    private EventHandler<? super MouseEvent> selecteerAudio() {
         return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
     }
 
-    private EventHandler<? super MouseEvent> move() {
+    private EventHandler<? super MouseEvent> beweeg() {
         return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.MOVE_AUDIO);
     }
 }
