@@ -1,5 +1,5 @@
 package mai.enums;
 
-public enum MatchOverType {
+public enum GameOverType {
     P1,P2,DRAW
 }

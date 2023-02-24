@@ -52,18 +52,12 @@ public class GameBoard {
         }
     }
 
-    public boolean checkBoard(int nextplayer, int oldPlayer) {
-        return checkPossibleAttacks(nextplayer, oldPlayer) || checkPlayerSquares() || isFull();
+    public boolean checkBoard(int nextplayer ) {
+        return checkPossibleAttacks(nextplayer) || checkPlayerSquares() || isFull();
     }
 
-    public boolean checkPossibleAttacks(int nextPlayer, int oldPlayer) {
-        boolean r = getPlayerMoves(nextPlayer).isEmpty();
-
-//        if (r) {
-//            return checkScore(oldPlayer);
-//        }
-
-        return r;
+    public boolean checkPossibleAttacks(int nextPlayer) {
+        return getPlayerMoves(nextPlayer).isEmpty();
     }
 
     public boolean checkScore(int nextPlayer) {

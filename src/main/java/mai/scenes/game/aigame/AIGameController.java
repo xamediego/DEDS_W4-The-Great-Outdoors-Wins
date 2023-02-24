@@ -10,8 +10,8 @@ public class AIGameController extends GameController {
 
     private final AILogic aiLogic = new AILogic();
 
-    public AIGameController(GameData gameData, int spaceSize) {
-        super(gameData, spaceSize);
+    public AIGameController(GameData gameData, int spaceMinSize, int spaceMaxSize) {
+        super(gameData, spaceMinSize, spaceMaxSize);
     }
 
     @Override
@@ -36,8 +36,8 @@ public class AIGameController extends GameController {
             gameData.currentPlayer = gameData.getPlayer1();
         }
 
-        if (checkGameConditions(newP, oldP)) {
-            endGame();
+        if (checkGameConditions(newP)) {
+            endGame(newP,oldP);
         } else {
             if (gameData.player1Finished && gameData.player2Finished) endTurn();
 

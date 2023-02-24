@@ -19,7 +19,7 @@ import mai.data.User;
 import mai.datastructs.Stapel;
 import mai.enums.ButtonType;
 import mai.enums.FXMLPart;
-import mai.enums.MatchOverType;
+import mai.enums.GameOverType;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.logic.*;
 import mai.scenes.gameover.GameOverController;
@@ -35,7 +35,7 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- Game Data -----
 
-    private final int spaceSize;
+    private final int spaceMinSize, spaceMaxSize;
     private final Stapel<GameData> gameGeschiedenis;
     public HBox[] bordRows;
 
@@ -69,6 +69,10 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private Button resetTurnButton;
 
+    private Button controllerResetTurnButton;
+    @FXML
+    private HBox resetButtonBox;
+
     // ----- UserDetails -----
 
     @FXML
@@ -89,21 +93,24 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private Circle player2AvatarCircle;
 
-    public GameController(GameData gameData, int spaceSize) {
+    public GameController(GameData gameData, int spaceMinSize, int spaceMaxSize) {
         this.gameData = gameData;
+        this.spaceMaxSize = spaceMaxSize;
         this.gameGeschiedenis = new Stapel<>();
-        this.spaceSize = spaceSize;
+        this.spaceMinSize = spaceMinSize;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        controllerResetTurnButton = resetTurnButton;
+
         AudioPlayer.playAudioFile(MenuAudio.SUMMON);
         configButtons();
 
         configPlayer1(gameData.getPlayer1());
         configPlayer2(gameData.getPlayer2());
 
-        configBoard(spaceSize);
+        configBoard();
         setInitialTurn();
 
         setOldGameData();
@@ -151,8 +158,8 @@ public class GameController extends AbstractController implements Initializable 
             gameData.currentPlayer = gameData.getPlayer1();
         }
 
-        if (checkGameConditions(newP, oldP)) {
-            endGame();
+        if (checkGameConditions(newP)) {
+            endGame(oldP, newP);
         } else {
             if (gameData.player1Finished && gameData.player2Finished) endTurn();
             setNewPlayerMove();
@@ -166,8 +173,8 @@ public class GameController extends AbstractController implements Initializable 
         setSelectAble();
     }
 
-    protected boolean checkGameConditions(int newP, int oldP) {
-        return gameData.gameBoard.checkBoard(newP, oldP);
+    protected boolean checkGameConditions(int newP) {
+        return gameData.gameBoard.checkBoard(newP);
     }
 
     protected void addGameHistory(GameData data) {
@@ -439,18 +446,18 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- configuring initial board -----
 
-    private void configBoard(int blockSize) {
+    private void configBoard() {
         gameData.gameBoard.setInitialOccupied(2);
-        drawBoard(gameData, blockSize);
+        drawBoard(gameData);
     }
 
-    private void drawBoard(GameData data, int blockSize) {
+    private void drawBoard(GameData data) {
         bordRows = new HBox[data.gameBoard.yGroote];
 
         for (int y = 0; y < data.gameBoard.yGroote; y++) {
             HBox row = new HBox();
             for (int x = 0; x < data.gameBoard.xGroote; x++) {
-                SpaceBox spaceBox = new SpaceBox(x, y, blockSize);
+                SpaceBox spaceBox = new SpaceBox(x, y, spaceMinSize, spaceMaxSize);
 
                 setBoxBorder(x, y, spaceBox);
 
@@ -597,6 +604,8 @@ public class GameController extends AbstractController implements Initializable 
         if (!gameGeschiedenis.isEmpty()) {
             AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
+            resetButtonBox.getChildren().clear();
+
             deselectSelectAble(gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber()));
 
             resetTwistedGame(gameGeschiedenis.pop());
@@ -605,7 +614,7 @@ public class GameController extends AbstractController implements Initializable 
 
     private void resetTwistedGame(GameData data) {
         gameData = data;
-        drawBoard(data, 75);
+        drawBoard(data);
 
         setOldGameData();
 
@@ -618,11 +627,13 @@ public class GameController extends AbstractController implements Initializable 
 
     protected void setResetButtonActive(boolean active) {
         if (!gameGeschiedenis.isEmpty()) {
-            resetTurnButton.setVisible(active);
-            resetTurnButton.setDisable(!active);
+            if(active && resetButtonBox.getChildren().isEmpty()){
+                resetButtonBox.getChildren().add(controllerResetTurnButton);
+            } else {
+                resetButtonBox.getChildren().clear();
+            }
         } else {
-            resetTurnButton.setVisible(false);
-            resetTurnButton.setDisable(false);
+            resetButtonBox.getChildren().clear();
         }
     }
 
@@ -632,21 +643,44 @@ public class GameController extends AbstractController implements Initializable 
     private void endGameEvent() {
         AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
 
-        endGame();
+        if(gameData.currentPlayer.getPlayerNumber() == 1){
+            endGame(1,2);
+        } else {
+            endGame(2,1);
+        }
     }
 
-    protected void endGame() {
-        FXMLPart gameOver = FXMLPart.GAMEOVER;
+    protected void endGame(int oldP, int newP) {
         if (gameData.getPlayerOneScore() > gameData.getPlayerTwoScore()) {
-            GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P1, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-            JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
+            spelerEenWin();
         } else if (gameData.getPlayerTwoScore() > gameData.getPlayerOneScore()) {
-            GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.P2, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-            JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
+            spelerTweeWin();
         } else {
-            GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), MatchOverType.DRAW, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-            JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, gameOver).getRoot());
+            if (gameData.gameBoard.checkBoard(newP)) {
+                if(oldP == 1){
+                    spelerEenWin();
+                } else if(oldP == 2) {
+                    spelerTweeWin();
+                }
+            } else {
+                gelijkSpel();
+            }
         }
+    }
+
+    private void spelerEenWin(){
+        GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), GameOverType.P1, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
+        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    }
+
+    private void spelerTweeWin(){
+        GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), GameOverType.P2, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
+        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    }
+
+    private void gelijkSpel(){
+        GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), GameOverType.DRAW, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
+        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
     }
 
 

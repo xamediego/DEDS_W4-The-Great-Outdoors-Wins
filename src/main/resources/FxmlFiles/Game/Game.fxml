@@ -37,12 +37,12 @@
                   <Label fx:id="player1Score" text="4" />
                     </children>
                 </VBox>
-            <VBox alignment="CENTER" spacing="10.0">
+            <VBox alignment="CENTER" fillWidth="false" spacing="10.0">
                <HBox.margin>
                   <Insets />
                </HBox.margin>
                <children>
-                      <HBox fx:id="GameBoardContainer" fillHeight="false">
+                      <HBox fx:id="GameBoardContainer" VBox.vgrow="ALWAYS">
                           <styleClass>
                               <String fx:value="tertiaryBackground" />
                               <String fx:value="gameBoard" />
@@ -51,7 +51,7 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </padding>
                      <children>
-                        <VBox fx:id="bordColumnBox" fillWidth="false" styleClass="bordColumnBox" />
+                        <VBox fx:id="bordColumnBox" styleClass="bordColumnBox" HBox.hgrow="ALWAYS" />
                      </children>
                       </HBox>
                   <HBox alignment="CENTER">
@@ -70,11 +70,15 @@
                   </HBox>
                   <HBox alignment="CENTER" spacing="20.0">
                      <children>
-                        <Button fx:id="resetTurnButton" mnemonicParsing="false" onAction="#resetTurn" styleClass="tertiaryMenuButton" text="Reset Turn">
-                           <graphic>
-                              <FontIcon iconColor="WHITE" iconLiteral="fas-redo" />
-                           </graphic>
-                        </Button>
+                        <HBox fx:id="resetButtonBox">
+                           <children>
+                              <Button fx:id="resetTurnButton" mnemonicParsing="false" onAction="#resetTurn" styleClass="tertiaryMenuButton" text="Reset Turn">
+                                 <graphic>
+                                    <FontIcon iconColor="WHITE" iconLiteral="fas-redo" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </HBox>
                         <Button fx:id="gameOverButton" mnemonicParsing="false" onAction="#endGameEvent" styleClass="tertiaryCancelButton" text="End Game" />
                      </children>
                   </HBox>

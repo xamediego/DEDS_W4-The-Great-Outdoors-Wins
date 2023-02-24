@@ -195,13 +195,13 @@ public class StapelTest {
 
         Assertions.assertTrue(gameBoard.isFull());
 
-        Assertions.assertTrue(gameBoard.checkPossibleAttacks(1,2));
-        Assertions.assertTrue(gameBoard.checkPossibleAttacks(2,1));
+        Assertions.assertTrue(gameBoard.checkPossibleAttacks(1));
+        Assertions.assertTrue(gameBoard.checkPossibleAttacks(2));
 
         Assertions.assertFalse(gameBoard.checkScore(1));
         Assertions.assertTrue(gameBoard.checkScore(2));
 
-        Assertions.assertTrue(gameBoard.checkBoard(1,2));
-        Assertions.assertTrue(gameBoard.checkBoard(2,1));
+        Assertions.assertTrue(gameBoard.checkBoard(1));
+        Assertions.assertTrue(gameBoard.checkBoard(2));
     }
 }

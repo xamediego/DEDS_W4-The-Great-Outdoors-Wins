@@ -10,13 +10,12 @@ public class SpaceBox extends HBox {
     public int x, y;
     private final Label boxLabel;
 
-    public SpaceBox(int x, int y, int blockSize) {
+    public SpaceBox(int x, int y, int minSize, int maxSize) {
         this.x = x;
         this.y = y;
-
-        this.setMinSize(blockSize, blockSize);
-        this.setPrefSize(blockSize, blockSize);
-        this.setMaxSize(blockSize, blockSize);
+        this.setMinSize(minSize, minSize);
+        this.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
+        this.setMaxSize(maxSize, maxSize);
 
         this.boxLabel = new Label();
         this.boxLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 20");

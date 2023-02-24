@@ -10,6 +10,8 @@ import mai.scenes.game.logic.Space;
 
 import java.util.Random;
 
+import static mai.scenes.game.aigame.EasyAI.*;
+
 public class AILogic {
 
     public AIMove makeMove(GameBoard gameBoard, AI aiPlayer, int aiNumber, int opponentNumber) throws UnderflowException {
@@ -25,7 +27,7 @@ public class AILogic {
     }
 }
 
-class EasyAI {
+class NormalAI {
     public static AIMove makeEasyMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
         return selectMostPointMove(selectAble, gameBoard, aiNumber, opponentNumber, ai);
     }
@@ -64,7 +66,22 @@ class EasyAI {
 
     private static int hVal;
 
-    private static AIMove getMostValueAttack(Stapel<Space> possiblePlayerMoves, GameBoard gameBoard, int aiNumber, AI ai) {
+
+
+}
+
+class EasyAI {
+    public static AIMove makeEasyMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
+        return selectMostPointMove(selectAble, gameBoard, aiNumber, opponentNumber, ai);
+    }
+
+    public static AIMove selectMostPointMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
+        return getMostValueAttack(selectAble, gameBoard, aiNumber, ai);
+    }
+
+    private static int hVal;
+
+    protected static AIMove getMostValueAttack(Stapel<Space> possiblePlayerMoves, GameBoard gameBoard, int aiNumber, AI ai) {
         Stapel<AIMove> possibleAttacks = new Stapel<>();
         hVal = 0;
 
@@ -86,9 +103,9 @@ class EasyAI {
     }
 
 
-    private static Stapel<AIMove> getHighestAttackValue(Stapel<Space> attackVectors, GameBoard gameBoard, Space origin, Stapel<AIMove> possibleAttacks, int aiNumber) {
+    protected static Stapel<AIMove> getHighestAttackValue(Stapel<Space> attackVectors, GameBoard gameBoard, Space origin, Stapel<AIMove> possibleAttacks, int aiNumber) {
         Space possibleAttackSelect;
-        System.out.println("AI: " + aiNumber);
+
         while (!attackVectors.isEmpty()) {
             try {
 
@@ -114,7 +131,7 @@ class EasyAI {
         return possibleAttacks;
     }
 
-    private static AIMove getRandomMove(Stapel<AIMove> moves) {
+    protected static AIMove getRandomMove(Stapel<AIMove> moves) {
         Random random = new Random();
 
         AIMove aiMove = null;

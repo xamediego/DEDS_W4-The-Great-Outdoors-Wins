@@ -13,7 +13,7 @@ import mai.JFXApplication;
 import mai.audio.MenuAudio;
 import mai.data.User;
 import mai.enums.FXMLPart;
-import mai.enums.MatchOverType;
+import mai.enums.GameOverType;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
 import mai.scenes.test.AbstractController;
@@ -25,7 +25,7 @@ import java.util.ResourceBundle;
 public class GameOverController extends AbstractController implements Initializable {
 
     private final User player1 , player2;
-    private final MatchOverType matchOverType;
+    private final GameOverType gameOverType;
 
     private final int player1Score, player2Score;
 
@@ -47,20 +47,20 @@ public class GameOverController extends AbstractController implements Initializa
     @FXML
     private Button returnButton;
 
-    public GameOverController(User player1, User player2, MatchOverType matchOverType, int player1Score, int player2Score) {
+    public GameOverController(User player1, User player2, GameOverType gameOverType, int player1Score, int player2Score) {
         this.player1 = player1;
         this.player2 = player2;
         this.player1Score = player1Score;
         this.player2Score = player2Score;
-        this.matchOverType = matchOverType;
+        this.gameOverType = gameOverType;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configButton();
-        if(matchOverType.equals(MatchOverType.P1)){
+        if(gameOverType.equals(GameOverType.P1)){
             setWinner(player1, String.valueOf(player1Score), "Has won with a score of:");
-        } else if(matchOverType.equals(MatchOverType.P2)){
+        } else if(gameOverType.equals(GameOverType.P2)){
             AudioPlayer.playAudioFile(MenuAudio.LOST);
             setWinner(player2, String.valueOf(player2Score), "Has won with a score of:");
         } else {
