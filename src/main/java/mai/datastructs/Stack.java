@@ -3,7 +3,7 @@ package mai.datastructs;
 
 import mai.exceptions.UnderflowException;
 
-public class Stapel<T> {
+public class Stack<T> {
 
     private static class Node<T> {
         T value;
@@ -61,7 +61,7 @@ public class Stapel<T> {
     }
 
 
-    public void pushAll(Stapel<T> values){
+    public void pushAll(Stack<T> values){
         while (!values.isEmpty()){
             try {
                 push(values.pop());

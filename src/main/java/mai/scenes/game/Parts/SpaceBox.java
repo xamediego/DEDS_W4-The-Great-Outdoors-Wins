@@ -1,4 +1,4 @@
-package mai.scenes.game.logic;
+package mai.scenes.game.Parts;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

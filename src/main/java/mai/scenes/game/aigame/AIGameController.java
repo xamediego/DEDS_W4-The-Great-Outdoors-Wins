@@ -1,8 +1,10 @@
 package mai.scenes.game.aigame;
 
 import mai.exceptions.UnderflowException;
-import mai.scenes.game.logic.GameData;
-import mai.scenes.game.normalgame.GameController;
+import mai.scenes.game.data.GameData;
+import mai.scenes.game.logic.AILogic;
+import mai.scenes.game.logic.AIMove;
+import mai.scenes.game.maingame.GameController;
 
 import java.util.Random;
 

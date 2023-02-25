@@ -1,4 +1,4 @@
-package mai.scenes.test;
+package mai.scenes.s_abstr;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;

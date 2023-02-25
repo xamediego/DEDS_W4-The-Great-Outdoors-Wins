@@ -1,52 +1,51 @@
-import mai.datastructs.Stapel;
+import mai.datastructs.Stack;
 import mai.exceptions.UnderflowException;
-import mai.scenes.game.aigame.AILogic;
-import mai.scenes.game.logic.GameBoard;
-import mai.scenes.game.logic.GameData;
-import mai.scenes.game.logic.Space;
+import mai.scenes.game.data.GameBoard;
+import mai.scenes.game.data.GameData;
+import mai.scenes.game.data.Space;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class StapelTest {
+public class StackTest {
 
     @Test
     void pushTestOnce() throws Exception {
         int value = 1;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
-        stapel.push(value);
+        stack.push(value);
 
-        Assertions.assertEquals((int) stapel.peek(), value);
+        Assertions.assertEquals((int) stack.peek(), value);
     }
 
     @Test
     void pushTestMultiple() throws Exception {
         int count = 10;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         for (int i = 1; i <= count; i++) {
-            stapel.push(i);
+            stack.push(i);
         }
 
-        Assertions.assertEquals((int) stapel.peek(), count);
+        Assertions.assertEquals((int) stack.peek(), count);
     }
 
     @Test
     void pushPopTestMultiple() throws Exception {
         int count = 10;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         for (int i = 1; i <= count; i++) {
-            stapel.push(i);
+            stack.push(i);
         }
 
-        stapel.pop();
-        stapel.pop();
+        stack.pop();
+        stack.pop();
 
-        Assertions.assertEquals((int) stapel.peek(), count - 2);
+        Assertions.assertEquals((int) stack.peek(), count - 2);
     }
 
 
@@ -54,56 +53,56 @@ public class StapelTest {
     void popTest() throws Exception {
         int count = 10;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         for (int i = 1; i <= count; i++) {
-            stapel.push(i);
+            stack.push(i);
         }
 
-        Assertions.assertEquals((int) stapel.pop(), count);
+        Assertions.assertEquals((int) stack.pop(), count);
 
-        Assertions.assertEquals((int) stapel.peek(), count - 1);
+        Assertions.assertEquals((int) stack.peek(), count - 1);
     }
 
     @Test
     void isEmptyTestOne() {
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
-        Assertions.assertTrue(stapel.isEmpty());
+        Assertions.assertTrue(stack.isEmpty());
     }
 
     @Test
     void isNotEmptyTest() {
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         int value = 1;
-        stapel.push(value);
+        stack.push(value);
 
-        Assertions.assertFalse(stapel.isEmpty());
+        Assertions.assertFalse(stack.isEmpty());
     }
 
     @Test
     void popUnderflowTestOne() {
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
-        Assertions.assertThrows(UnderflowException.class, stapel::pop);
+        Assertions.assertThrows(UnderflowException.class, stack::pop);
     }
 
     @Test
     void popUnderflowTestTwo() throws Exception {
         int count = 10;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         for (int i = 1; i <= count; i++) {
-            stapel.push(i);
+            stack.push(i);
         }
 
         for (int i = 1; i <= count; i++) {
-            stapel.pop();
+            stack.pop();
         }
 
-        Assertions.assertThrows(UnderflowException.class, stapel::pop);
+        Assertions.assertThrows(UnderflowException.class, stack::pop);
     }
 
 
@@ -111,53 +110,53 @@ public class StapelTest {
     void stackContainTest(){
         int count = 10;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         for (int i = 1; i <= count; i++) {
-            stapel.push(i);
+            stack.push(i);
         }
 
-        Assertions.assertTrue(stapel.contains(1));
+        Assertions.assertTrue(stack.contains(1));
     }
 
     @Test
     void stackDoesNotContainTest(){
         int count = 10;
 
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
         for (int i = 1; i <= count; i++) {
-            stapel.push(i);
+            stack.push(i);
         }
 
-        Assertions.assertFalse(stapel.contains(0));
+        Assertions.assertFalse(stack.contains(0));
     }
 
 
 
     @Test
     void peekUnderflowTest() {
-        Stapel<Integer> stapel = new Stapel<>();
+        Stack<Integer> stack = new Stack<>();
 
-        Assertions.assertThrows(UnderflowException.class, stapel::peek);
+        Assertions.assertThrows(UnderflowException.class, stack::peek);
     }
 
     @Test
     void gameDataStackTest() throws Exception {
         int count = 10;
 
-        Stapel<GameData> stapel = new Stapel<>();
+        Stack<GameData> stack = new Stack<>();
         GameData gameData = new GameData(0, 0, 1, null, null, null);
 
         for (int i = 0; i < count; i++) {
-            stapel.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
+            stack.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
             gameData.increaseTurnNumber();
         }
 
-        Assertions.assertEquals(count, stapel.peek().getTurnNumber());
+        Assertions.assertEquals(count, stack.peek().getTurnNumber());
 
         for (int i = gameData.getTurnNumber() - 1; i >= 1; i--) {
-            Assertions.assertEquals(i , stapel.pop().getTurnNumber());
+            Assertions.assertEquals(i , stack.pop().getTurnNumber());
         }
 
     }
@@ -166,15 +165,15 @@ public class StapelTest {
     void gameDataStackTest2() throws Exception {
         int count = 10;
 
-        Stapel<GameData> stapel = new Stapel<>();
+        Stack<GameData> stack = new Stack<>();
         GameData gameData = new GameData(0, 0, 1, null, null, null);
 
         for (int i = 0; i < count; i++) {
-            stapel.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
+            stack.push(new GameData(0, 0, gameData.getTurnNumber(), null, null, null));
             gameData.increaseTurnNumber();
         }
 
-        Assertions.assertEquals(count, stapel.peek().getTurnNumber());
+        Assertions.assertEquals(count, stack.peek().getTurnNumber());
     }
 
     @Test

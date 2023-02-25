@@ -1,4 +1,4 @@
-package mai.scenes.game.normalgame;
+package mai.scenes.game.maingame;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -14,19 +14,25 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import mai.JFXApplication;
-import mai.audio.MenuAudio;
+import mai.audio.ButtonAudio;
+import mai.audio.Sound;
 import mai.data.User;
-import mai.datastructs.Stapel;
+import mai.datastructs.Stack;
 import mai.enums.ButtonType;
 import mai.enums.FXMLPart;
 import mai.enums.GameOverType;
 import mai.exceptions.UnderflowException;
+import mai.parts.AvatarBox;
+import mai.scenes.game.Parts.SpaceBox;
 import mai.scenes.game.Parts.UserInfoBox;
-import mai.scenes.game.logic.*;
+import mai.scenes.game.data.AttackVectors;
+import mai.scenes.game.data.GameBoard;
+import mai.scenes.game.data.GameData;
+import mai.scenes.game.data.Space;
 import mai.scenes.gameover.GameOverController;
 import mai.scenes.gameover.GameOverScene;
-import mai.scenes.test.AbstractController;
 import mai.audio.AudioPlayer;
+import mai.scenes.s_abstr.AbstractController;
 
 import java.net.URL;
 import java.util.Random;
@@ -37,7 +43,7 @@ public class GameController extends AbstractController implements Initializable 
     // ----- Game Data -----
 
     private final int spaceMinSize, spaceMaxSize;
-    private final Stapel<GameData> gameGeschiedenis;
+    private final Stack<GameData> gameGeschiedenis;
     public HBox[] bordRows;
 
     //move gameData to stack?
@@ -82,7 +88,7 @@ public class GameController extends AbstractController implements Initializable 
     public GameController(GameData gameData, int spaceMinSize, int spaceMaxSize) {
         this.gameData = gameData;
         this.spaceMaxSize = spaceMaxSize;
-        this.gameGeschiedenis = new Stapel<>();
+        this.gameGeschiedenis = new Stack<>();
         this.spaceMinSize = spaceMinSize;
     }
 
@@ -90,19 +96,35 @@ public class GameController extends AbstractController implements Initializable 
     public void initialize(URL url, ResourceBundle resourceBundle) {
         controllerResetTurnButton = resetTurnButton;
 
-        AudioPlayer.playAudioFile(MenuAudio.SUMMON);
+        AudioPlayer.playAudioFile(Sound.SUMMON.getAudio());
         configButtons();
 
-        horizontalPlayerOneInfo = new UserInfoBox(gameData.getPlayer1(), gameData.getPlayerOneScore(), "Hoodie",60);
-        horizontalPlayerTwoInfo = new UserInfoBox(gameData.getPlayer2(), gameData.getPlayerTwoScore(), "Baggy Sweater",60);
+        configPlayerInfo();
 
         HorizontalPlayerOneInfoContainer.getChildren().add(horizontalPlayerOneInfo);
+
         HorizontalPlayerTwoInfoContainer.getChildren().add(horizontalPlayerTwoInfo);
 
         configBoard();
         setInitialTurn();
 
         setOldGameData();
+    }
+
+    private void configPlayerInfo(){
+        AvatarBox p1AvatarBox = getAvatarBox(gameData.getPlayer1());
+        AvatarBox p2AvatarBox = getAvatarBox(gameData.getPlayer2());
+
+        horizontalPlayerOneInfo = new UserInfoBox(gameData.getPlayer1(), gameData.getPlayerOneScore(), "Hoodie",p1AvatarBox);
+        horizontalPlayerTwoInfo = new UserInfoBox(gameData.getPlayer2(), gameData.getPlayerTwoScore(), "Baggy Sweater",p2AvatarBox);
+    }
+
+    private AvatarBox getAvatarBox(User user){
+        if(user.getProfilePictureUrl() != null){
+            return new AvatarBox(60,new Image(user.getProfilePictureUrl()), user.getPlayerColour());
+        } else {
+            return new AvatarBox(60,new Image("/images/app/defaultProfImage.png"), user.getPlayerColour());
+        }
     }
 
     private void configButtons() {
@@ -174,7 +196,7 @@ public class GameController extends AbstractController implements Initializable 
     // ----- make the tiles for the current player selectable -----
 
     private void setSelectAble() {
-        Stapel<Space> selectAbles = gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber());
+        Stack<Space> selectAbles = gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber());
 
         int size = selectAbles.getSize();
         for (int i = 0; i < size; i++) {
@@ -209,7 +231,7 @@ public class GameController extends AbstractController implements Initializable 
         return (EventHandler<MouseEvent>) event -> {
             SpaceBox space = (SpaceBox) event.getSource();
             if (selected != null && (selected.y == space.y && selected.x == space.x)) {
-                AudioPlayer.playAudioFile(MenuAudio.CANCEL_AUDIO);
+                AudioPlayer.playAudioFile(ButtonAudio.CANCEL.getAudio());
 
                 space.getStyleClass().clear();
                 deselect(gameData.gameBoard.getBord()[space.x][space.y]);
@@ -217,20 +239,20 @@ public class GameController extends AbstractController implements Initializable 
                 selected = null;
             } else {
                 if (selected != null) deselect(selected);
-                AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+                AudioPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
                 space.getStyleClass().add("spaceSelected");
                 selected = gameData.gameBoard.getBord()[space.x][space.y];
 
                 AttackVectors attackVectors = gameData.gameBoard.getPossibleAttackSquare(new Space(space.x, space.y), gameData.currentPlayer.getRange(), gameData.currentPlayer.getAttackDropOff());
 
-                showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors(), space);
-                showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors(), space);
+                showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors, space);
+                showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors, space);
             }
         };
     }
 
-    private void showShortRangeAttack(Stapel<Space> attackVectors, SpaceBox origin) {
+    private void showShortRangeAttack(Stack<Space> attackVectors, SpaceBox origin) {
         while (!attackVectors.isEmpty()) {
             try {
                 showPossibleBlock(attackVectors.pop(), ButtonType.SHORTRANGE.getType(), moveEvent(gameData.gameBoard.getBord()[origin.x][origin.y]));
@@ -240,7 +262,7 @@ public class GameController extends AbstractController implements Initializable 
         }
     }
 
-    private void showLongRangeAttack(Stapel<Space> attackVectors, SpaceBox origin) {
+    private void showLongRangeAttack(Stack<Space> attackVectors, SpaceBox origin) {
         while (!attackVectors.isEmpty()) {
             try {
                 showPossibleBlock(attackVectors.pop(), ButtonType.LONGRANGE.getType(), moveEvent(gameData.gameBoard.getBord()[origin.x][origin.y]));
@@ -262,12 +284,12 @@ public class GameController extends AbstractController implements Initializable 
         bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().clear();
         bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().add("spaceSelect");
 
-        Stapel<Space> deselectAbles = gameData.gameBoard.getDeselect(selectedSpace, 3);
+        Stack<Space> deselectAbles = gameData.gameBoard.getDeselect(selectedSpace, 3);
 
         deselectSelectAble(deselectAbles);
     }
 
-    private void deselectSelectAble(Stapel<Space> deselectAbles) {
+    private void deselectSelectAble(Stack<Space> deselectAbles) {
         while (!deselectAbles.isEmpty()) {
             try {
                 deselectBlock(deselectAbles.pop());
@@ -286,7 +308,7 @@ public class GameController extends AbstractController implements Initializable 
     // ----- movement methods -----
     public EventHandler<? super MouseEvent> moveEvent(Space origin) {
         return (EventHandler<MouseEvent>) event -> {
-            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+            AudioPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
             selected = null;
             SpaceBox selected = (SpaceBox) event.getSource();
@@ -349,7 +371,7 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     private void setInfected(Space select, int playerNumber) {
-        Stapel<Space> a = gameData.gameBoard.getInfected(select, playerNumber);
+        Stack<Space> a = gameData.gameBoard.getInfected(select, playerNumber);
 
         while (!a.isEmpty()) {
             try {
@@ -564,7 +586,7 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private void resetTurn() throws UnderflowException {
         if (!gameGeschiedenis.isEmpty()) {
-            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+            AudioPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
             resetButtonBox.getChildren().clear();
 
@@ -603,7 +625,7 @@ public class GameController extends AbstractController implements Initializable 
 
     @FXML
     private void endGameEvent() {
-        AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+        AudioPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
         if(gameData.currentPlayer.getPlayerNumber() == 1){
             endGame(1,2);
@@ -649,11 +671,11 @@ public class GameController extends AbstractController implements Initializable 
     // ----- for adding sounds? -----
 
     private EventHandler<? super MouseEvent> select() {
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(ButtonAudio.SELECT.getAudio());
     }
 
     private EventHandler<? super MouseEvent> move() {
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.MOVE_AUDIO);
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(ButtonAudio.MOVE.getAudio());
     }
 }
 

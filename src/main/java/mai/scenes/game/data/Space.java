@@ -1,4 +1,4 @@
-package mai.scenes.game.logic;
+package mai.scenes.game.data;
 
 public class Space {
     public int x, y;

@@ -11,15 +11,16 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Circle;
 import mai.JFXApplication;
-import mai.audio.MenuAudio;
+import mai.audio.AudioPlayer;
+import mai.audio.ButtonAudio;
+import mai.audio.Sound;
 import mai.data.User;
 import mai.enums.FXMLPart;
 import mai.enums.GameOverType;
-import mai.scenes.game.Parts.AvatarBox;
+import mai.parts.AvatarBox;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
-import mai.scenes.test.AbstractController;
-import mai.audio.AudioPlayer;
+import mai.scenes.s_abstr.AbstractController;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -67,10 +68,10 @@ public class GameOverController extends AbstractController implements Initializa
         if(gameOverType.equals(GameOverType.P1)){
             setWinner(player1, String.valueOf(player1Score), "Has won with a score of:");
         } else if(gameOverType.equals(GameOverType.P2)){
-            AudioPlayer.playAudioFile(MenuAudio.LOST);
+            AudioPlayer.playAudioFile(Sound.LOST.getAudio());
             setWinner(player2, String.valueOf(player2Score), "Has won with a score of:");
         } else {
-            AudioPlayer.playAudioFile(MenuAudio.LOST);
+            AudioPlayer.playAudioFile(Sound.LOST.getAudio());
 
             User tempUser = new User();
             tempUser.setPlayerColour("WHITE");
@@ -101,12 +102,12 @@ public class GameOverController extends AbstractController implements Initializa
     }
 
     private EventHandler<? super MouseEvent> select(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(ButtonAudio.SELECT.getAudio());
     }
 
     @FXML
     private void returnToMain(){
-        AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+        AudioPlayer.playAudioFile(ButtonAudio.OK.getAudio());
         JFXApplication.gameMenuController.setContent(new GameConfigScene(new GameConfigController(), FXMLPart.GAMECONFIG).getRoot());
     }
 

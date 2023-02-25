@@ -1,4 +1,4 @@
-package mai.scenes.game.logic;
+package mai.scenes.game.data;
 
 import mai.data.AI;
 import mai.data.User;

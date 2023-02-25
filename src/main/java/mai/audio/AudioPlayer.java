@@ -1,13 +1,16 @@
 package mai.audio;
 
 import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class AudioPlayer {
-    public static void playAudioFile(File file){
+    public static void playAudioFile(InputStream stream){
             try {
-                AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(stream);
+
                 Clip clip = AudioSystem.getClip();
                 clip.open(audioStream);
                 clip.start();

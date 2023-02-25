@@ -1,4 +1,4 @@
-package mai.scenes.game.Parts;
+package mai.parts;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

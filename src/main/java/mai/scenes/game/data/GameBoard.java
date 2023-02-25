@@ -1,6 +1,6 @@
-package mai.scenes.game.logic;
+package mai.scenes.game.data;
 
-import mai.datastructs.Stapel;
+import mai.datastructs.Stack;
 import mai.exceptions.UnderflowException;
 
 public class GameBoard {
@@ -103,15 +103,15 @@ public class GameBoard {
         return count;
     }
 
-    public Stapel<Space> getPlayerMoves(int playerNumber) {
-        Stapel<Space> selectAble = new Stapel<>();
+    public Stack<Space> getPlayerMoves(int playerNumber) {
+        Stack<Space> selectAble = new Stack<>();
         for (int y = 0; y < yGroote; y++) {
             for (int x = 0; x < xGroote; x++) {
 
                 if (bord[x][y].getPlayerNumber() == playerNumber) {
                     Space select = new Space(x, y, true, playerNumber);
                     AttackVectors attackVectors = getPossibleAttackSquare(select, 3, 2);
-                    if (!attackVectors.possibleOneRangeAttackVectors().isEmpty() || !attackVectors.possibleTwoRangeAttackVectors().isEmpty()) {
+                    if (!attackVectors.possibleOneRangeAttackVectors.isEmpty() || !attackVectors.possibleTwoRangeAttackVectors.isEmpty()) {
                         selectAble.push(select);
                     }
 
@@ -121,8 +121,8 @@ public class GameBoard {
         return selectAble;
     }
 
-    public Stapel<Space> getDeselect(Space selectedSpace, int range) {
-        Stapel<Space> deselect = new Stapel<>();
+    public Stack<Space> getDeselect(Space selectedSpace, int range) {
+        Stack<Space> deselect = new Stack<>();
 
         for (int y = selectedSpace.y - range - 1; y < selectedSpace.y + range; y++) {
             if (y >= 0 && y < yGroote) {
@@ -140,8 +140,8 @@ public class GameBoard {
 
 
     public AttackVectors getPossibleAttackDiagonal(Space space, int range, int attackDropOff) {
-        Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
-        Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
+        Stack<Space> possibleOneRangeAttackVectors = new Stack<>();
+        Stack<Space> possibleTwoRangeAttackVectors = new Stack<>();
 
         for (int x = space.x - (range - 1); x < space.x + range; x++) {
             if (x >= 0 && x < xGroote) {
@@ -168,8 +168,8 @@ public class GameBoard {
         return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public Stapel<Space> getDiagonal(Space space, int range) {
-        Stapel<Space> r = new Stapel<>();
+    public Stack<Space> getDiagonal(Space space, int range) {
+        Stack<Space> r = new Stack<>();
 
         for (int x = space.x - range - 1; x < space.x + range; x++) {
             if (x >= 0 && x < xGroote) {
@@ -190,8 +190,8 @@ public class GameBoard {
     }
 
     public AttackVectors getPossibleAttackSquare(Space space, int range, int attackDropOff) {
-        Stapel<Space> possibleOneRangeAttackVectors = new Stapel<>();
-        Stapel<Space> possibleTwoRangeAttackVectors = new Stapel<>();
+        Stack<Space> possibleOneRangeAttackVectors = new Stack<>();
+        Stack<Space> possibleTwoRangeAttackVectors = new Stack<>();
 
         for (int x = space.x - (range - 1); x < space.x + range; x++) {
             if (x >= 0 && x < xGroote) {
@@ -215,8 +215,8 @@ public class GameBoard {
         return new AttackVectors(possibleOneRangeAttackVectors, possibleTwoRangeAttackVectors);
     }
 
-    public Stapel<Space> getSquare(Space space, int infectRange) {
-        Stapel<Space> r = new Stapel<>();
+    public Stack<Space> getSquare(Space space, int infectRange) {
+        Stack<Space> r = new Stack<>();
 
         for (int x = space.x - (infectRange - 1); x < space.x + infectRange; x++) {
             if (x >= 0 && x < xGroote) {
@@ -258,9 +258,9 @@ public class GameBoard {
         }
     }
 
-    public Stapel<Space> getInfected(Space select, int playerNumber) {
-        Stapel<Space> spaceSelectSquare = getSquare(select, 2);
-        Stapel<Space> returnStack = new Stapel<>();
+    public Stack<Space> getInfected(Space select, int playerNumber) {
+        Stack<Space> spaceSelectSquare = getSquare(select, 2);
+        Stack<Space> returnStack = new Stack<>();
 
         int size = spaceSelectSquare.getSize();
 
@@ -278,7 +278,7 @@ public class GameBoard {
         return returnStack;
     }
 
-    public void setInfected(Stapel<Space> spaces, int playerNumber) {
+    public void setInfected(Stack<Space> spaces, int playerNumber) {
         int s = spaces.getSize();
 
         for (int i = 0; i < s; i++) {

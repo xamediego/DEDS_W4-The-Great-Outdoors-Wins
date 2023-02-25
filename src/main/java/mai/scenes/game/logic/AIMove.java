@@ -1,6 +1,6 @@
-package mai.scenes.game.aigame;
+package mai.scenes.game.logic;
 
-import mai.scenes.game.logic.Space;
+import mai.scenes.game.data.Space;
 
 public class AIMove {
     private final Space origin, selected;

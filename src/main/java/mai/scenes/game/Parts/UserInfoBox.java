@@ -2,9 +2,9 @@ package mai.scenes.game.Parts;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import mai.data.User;
+import mai.parts.AvatarBox;
 
 public class UserInfoBox extends VBox {
 
@@ -25,26 +25,31 @@ public class UserInfoBox extends VBox {
         configBox();
     }
 
-    public UserInfoBox(User user, int score, String team ,int size) {
+    public UserInfoBox(User user, int score, String team, AvatarBox avatarBox) {
         playerLabel = new Label(user.getPlayerName());
         scoreLabel = new Label(String.valueOf(score));
         teamLabel = new Label(team);
+        this.avatarBox = avatarBox;
 
         this.setSpacing(5);
         this.setFillWidth(true);
         this.setAlignment(Pos.CENTER);
 
-        if(user.getProfilePictureUrl() != null){
-            avatarBox = new AvatarBox(size, new Image(user.getProfilePictureUrl() ), user.getPlayerColour());
-        } else {
-            avatarBox = new AvatarBox(size, new Image("/images/app/defaultProfImage.png"), user.getPlayerColour());
-        }
+
+//        if (user.getProfilePictureUrl() != null) {
+//            System.out.println(user.getProfilePictureUrl());
+//            InputStream fileInputStream =  UserInfoBox.class.getResourceAsStream(user.getProfilePictureUrl());
+//
+//            avatarBox = new AvatarBox(size, new Image(fileInputStream), user.getPlayerColour());
+//        } else {
+//            avatarBox = new AvatarBox(size, new Image("/images/app/defaultProfImage.png"), user.getPlayerColour());
+//        }
 
         configBox();
     }
 
-    private void configBox(){
-        if(avatarBox != null){
+    private void configBox() {
+        if (avatarBox != null) {
             this.getChildren().add(avatarBox);
         }
 

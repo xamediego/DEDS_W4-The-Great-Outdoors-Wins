@@ -9,21 +9,22 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import mai.JFXApplication;
-import mai.audio.MenuAudio;
+import mai.audio.AudioPlayer;
+import mai.audio.ButtonAudio;
+import mai.audio.Sound;
 import mai.data.User;
 import mai.enums.Difficulty;
 import mai.enums.FXMLPart;
 import mai.parts.NumberField;
 import mai.scenes.game.aigame.AIGameController;
 import mai.scenes.game.aigame.AIGameScene;
-import mai.scenes.game.logic.GameBoard;
-import mai.scenes.game.logic.GameData;
-import mai.scenes.game.logic.Space;
-import mai.scenes.game.normalgame.GameController;
-import mai.scenes.game.normalgame.GameScene;
-import mai.scenes.test.AbstractController;
+import mai.scenes.game.data.GameBoard;
+import mai.scenes.game.data.GameData;
+import mai.scenes.game.data.Space;
+import mai.scenes.game.maingame.GameController;
+import mai.scenes.game.maingame.GameScene;
+import mai.scenes.s_abstr.AbstractController;
 import mai.service.AIService;
-import mai.audio.AudioPlayer;
 import mai.service.UserService;
 
 import java.net.URL;
@@ -73,18 +74,22 @@ public class GameConfigController extends AbstractController implements Initiali
         NumberField.makeNumberField(xGroote, "([\\d])*?");
         xGroote.setText("7");
         configAmountField(xGroote);
+        xGroote.setOnMouseEntered(move());
 
         NumberField.makeNumberField(yGroote, "([\\d])*?");
         yGroote.setText("7");
         configAmountField(yGroote);
+        yGroote.setOnMouseEntered(move());
 
         NumberField.makeNumberField(minSizeField, "([\\d])*?");
         minSizeField.setText("50");
         configSizeField(minSizeField);
+        minSizeField.setOnMouseEntered(move());
 
         NumberField.makeNumberField(maxSizeField, "([\\d])*?");
         maxSizeField.setText("50");
         configSizeField(maxSizeField);
+        maxSizeField.setOnMouseEntered(move());
     }
 
 
@@ -110,9 +115,7 @@ public class GameConfigController extends AbstractController implements Initiali
 
     @FXML
     private void startGame() {
-        AudioPlayer.playAudioFile(MenuAudio.START_AUDIO);
-
-
+        AudioPlayer.playAudioFile(Sound.SUMMON.getAudio());
 
         int minSize = Integer.parseInt(minSizeField.getText());
         int maxSize = Integer.parseInt(maxSizeField.getText());
@@ -135,7 +138,7 @@ public class GameConfigController extends AbstractController implements Initiali
 
     @FXML
     private void starNonAIGame(){
-        AudioPlayer.playAudioFile(MenuAudio.START_AUDIO);
+        AudioPlayer.playAudioFile(ButtonAudio.START.getAudio());
 
         int minSize = Integer.parseInt(minSizeField.getText());
         int maxSize = Integer.parseInt(maxSizeField.getText());
@@ -187,14 +190,15 @@ public class GameConfigController extends AbstractController implements Initiali
 
     private void configStartButton(){
         startButton.setOnMouseEntered(select());
+        startButtonNonAI.setOnMouseEntered(select());
     }
 
     private EventHandler<? super MouseEvent> select(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(ButtonAudio.SELECT.getAudio());
     }
 
     private EventHandler<? super MouseEvent> move(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.MOVE_AUDIO);
+        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(ButtonAudio.MOVE.getAudio());
     }
 
 

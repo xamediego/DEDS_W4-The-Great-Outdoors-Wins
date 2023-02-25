@@ -1,31 +1,35 @@
 package mai.audio;
 
+import java.io.InputStream;
+
 public enum ButtonAudio {
 
-    CANCEL{
-        public String getAudio(){
-            return "src/main/resources/Menu_sounds/C_CANCEL.wav";
+    CANCEL {
+        public InputStream getAudio() {
+            return getClass().getResourceAsStream("/Menu_sounds/C_CANCEL.wav");
         }
     },
-    MOVE{
-        public String getAudio(){return "src/main/resources/Menu_sounds/C_MOVE.wav";}
-    },
-    SELECT{
-        public String getAudio(){
-            return "src/main/resources/Menu_sounds/C_SELECT.wav";
+    MOVE {
+        public InputStream getAudio() {
+            return getClass().getResourceAsStream("/Menu_sounds/C_MOVE.wav");
         }
     },
-    START{
-        public String getAudio(){
-            return "src/main/resources/Menu_sounds/C_START.wav";
+    SELECT {
+        public InputStream getAudio() {
+            return getClass().getResourceAsStream("/Menu_sounds/C_SELECT.wav");
         }
     },
-    OK{
-        public String getAudio(){
-            return "src/main/resources/Menu_sounds/C_OK.wav";
+    START {
+        public InputStream getAudio() {
+            return getClass().getResourceAsStream("/Menu_sounds/C_START.wav");
+        }
+    },
+    OK {
+        public InputStream getAudio() {
+            return getClass().getResourceAsStream("/Menu_sounds/C_OK.wav");
         }
     };
 
-    public abstract String getAudio();
+    public abstract InputStream getAudio();
 
 }

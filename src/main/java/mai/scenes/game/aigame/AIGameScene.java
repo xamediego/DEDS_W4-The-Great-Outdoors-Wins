@@ -1,7 +1,7 @@
 package mai.scenes.game.aigame;
 
 import mai.enums.FXMLPart;
-import mai.scenes.game.normalgame.GameScene;
+import mai.scenes.game.maingame.GameScene;
 
 public class AIGameScene extends GameScene {
 
