@@ -7,14 +7,12 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.Bloom;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import mai.JFXApplication;
-import mai.audio.MenuAudio;
+import mai.audio.ButtonAudio;
+import mai.audio.Sound;
 import mai.data.User;
 import mai.datastructs.Stapel;
 import mai.enums.ButtonType;
@@ -23,10 +21,12 @@ import mai.enums.GameOverType;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.Parts.UserInfoBox;
 import mai.scenes.game.logic.*;
+import mai.scenes.gamemenu.GameMenuController;
 import mai.scenes.gameover.GameOverController;
+import mai.scenes.gameover.GameOverData;
 import mai.scenes.gameover.GameOverScene;
-import mai.scenes.test.AbstractController;
-import mai.audio.AudioPlayer;
+import mai.scenes.abstractscene.AbstractController;
+import mai.audio.SoundPlayer;
 
 import java.net.URL;
 import java.util.Random;
@@ -78,10 +78,13 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private VBox HorizontalPlayerTwoInfoContainer;
 
+    private final GameMenuController gameMenuController;
 
-    public GameController(GameData gameData, int spaceMinSize, int spaceMaxSize) {
+
+    public GameController(GameData gameData, int spaceMinSize, int spaceMaxSize, GameMenuController gameMenuController) {
         this.gameData = gameData;
         this.spaceMaxSize = spaceMaxSize;
+        this.gameMenuController = gameMenuController;
         this.gameGeschiedenis = new Stapel<>();
         this.spaceMinSize = spaceMinSize;
     }
@@ -90,7 +93,7 @@ public class GameController extends AbstractController implements Initializable 
     public void initialize(URL url, ResourceBundle resourceBundle) {
         controllerResetTurnButton = resetTurnButton;
 
-        AudioPlayer.playAudioFile(MenuAudio.SUMMON);
+        SoundPlayer.playAudioFile(Sound.SUMMON.getAudio());
         configButtons();
 
         horizontalPlayerOneInfo = new UserInfoBox(gameData.getPlayer1(), gameData.getPlayerOneScore(), "Hoodie",60);
@@ -129,8 +132,6 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     public void endPlayerMove() {
-        removeSelectAble(gameData.currentPlayer.getPlayerNumber());
-
         int oldP, newP;
 
         if (gameData.currentPlayer.getPlayerNumber() == 1) {
@@ -159,7 +160,7 @@ public class GameController extends AbstractController implements Initializable 
         setTurnGlow(gameData.currentPlayer.getPlayerNumber());
 
         setCurrentPlayer();
-        setSelectAble();
+        setSelectAble(gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber()));
     }
 
     protected boolean checkGameConditions(int newP) {
@@ -173,11 +174,8 @@ public class GameController extends AbstractController implements Initializable 
 
     // ----- make the tiles for the current player selectable -----
 
-    private void setSelectAble() {
-        Stapel<Space> selectAbles = gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber());
-
-        int size = selectAbles.getSize();
-        for (int i = 0; i < size; i++) {
+    private void setSelectAble(Stapel<Space> selectAbles) {
+        while (!selectAbles.isEmpty()){
             try {
                 makeSelectAble(selectAbles.pop());
             } catch (UnderflowException e) {
@@ -191,14 +189,20 @@ public class GameController extends AbstractController implements Initializable 
         bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(showPossible());
     }
 
-    protected void removeSelectAble(int playerNumber) {
-        for (int y = 0; y < gameData.gameBoard.yGroote; y++) {
-            for (int x = 0; x < gameData.gameBoard.xGroote; x++) {
-                if (gameData.gameBoard.getBord()[x][y].getPlayerNumber() == playerNumber)
-                    bordRows[y].getChildren().get(x).getStyleClass().clear();
-                bordRows[y].getChildren().get(x).setOnMouseClicked(null);
+    protected void removeSelectAble(Stapel<Space> removeAbles) {
+        while (!removeAbles.isEmpty()){
+            try {
+                deselectBlock(removeAbles.pop());
+            } catch (UnderflowException e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    private void deselectBlock(Space space) {
+        bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
+        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(null);
+        bordRows[space.y].getChildren().get(space.x).setOnMouseEntered(null);
     }
 
     // ----- setting selectable tiles -----
@@ -207,28 +211,39 @@ public class GameController extends AbstractController implements Initializable 
 
     private EventHandler<? super MouseEvent> showPossible() {
         return (EventHandler<MouseEvent>) event -> {
+
             SpaceBox space = (SpaceBox) event.getSource();
             if (selected != null && (selected.y == space.y && selected.x == space.x)) {
-                AudioPlayer.playAudioFile(MenuAudio.CANCEL_AUDIO);
-
-                space.getStyleClass().clear();
-                deselect(gameData.gameBoard.getBord()[space.x][space.y]);
-
-                selected = null;
+                cancelAttack(space);
             } else {
-                if (selected != null) deselect(selected);
-                AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
-
-                space.getStyleClass().add("spaceSelected");
-                selected = gameData.gameBoard.getBord()[space.x][space.y];
-
-                AttackVectors attackVectors = gameData.gameBoard.getPossibleAttackSquare(new Space(space.x, space.y), gameData.currentPlayer.getRange(), gameData.currentPlayer.getAttackDropOff());
-
-                showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors(), space);
-                showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors(), space);
+                showPossibleAttacks(space);
             }
         };
     }
+
+    private void cancelAttack(SpaceBox space){
+        SoundPlayer.playAudioFile(ButtonAudio.CANCEL.getAudio());
+
+        space.getStyleClass().clear();
+        deselectActiveSelection(gameData.gameBoard.getBord()[space.x][space.y]);
+
+        selected = null;
+    }
+
+    private void showPossibleAttacks(SpaceBox space) {
+        if (selected != null) deselectActiveSelection(selected);
+
+        SoundPlayer.playAudioFile(ButtonAudio.OK.getAudio());
+
+        space.getStyleClass().add(ButtonType.SELECT.getType());
+        selected = gameData.gameBoard.getBord()[space.x][space.y];
+
+        AttackVectors attackVectors = gameData.gameBoard.getPossibleAttackSquare(new Space(space.x, space.y), gameData.currentPlayer.getRange(), gameData.currentPlayer.getAttackDropOff());
+
+        showShortRangeAttack(attackVectors.possibleOneRangeAttackVectors(), space);
+        showLongRangeAttack(attackVectors.possibleTwoRangeAttackVectors(), space);
+    }
+
 
     private void showShortRangeAttack(Stapel<Space> attackVectors, SpaceBox origin) {
         while (!attackVectors.isEmpty()) {
@@ -258,35 +273,19 @@ public class GameController extends AbstractController implements Initializable 
         bordRows[space.y].getChildren().get(space.x).getStyleClass().add(classStyle);
     }
 
-    private void deselect(Space selectedSpace) {
+    private void deselectActiveSelection(Space selectedSpace) {
         bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().clear();
-        bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().add("spaceSelect");
+        bordRows[selectedSpace.y].getChildren().get(selectedSpace.x).getStyleClass().add(ButtonType.SELECT.getType());
 
         Stapel<Space> deselectAbles = gameData.gameBoard.getDeselect(selectedSpace, 3);
 
-        deselectSelectAble(deselectAbles);
-    }
-
-    private void deselectSelectAble(Stapel<Space> deselectAbles) {
-        while (!deselectAbles.isEmpty()) {
-            try {
-                deselectBlock(deselectAbles.pop());
-            } catch (UnderflowException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void deselectBlock(Space space) {
-        bordRows[space.y].getChildren().get(space.x).getStyleClass().clear();
-        bordRows[space.y].getChildren().get(space.x).setOnMouseClicked(null);
-        bordRows[space.y].getChildren().get(space.x).setOnMouseEntered(null);
+        removeSelectAble(deselectAbles);
     }
 
     // ----- movement methods -----
     public EventHandler<? super MouseEvent> moveEvent(Space origin) {
         return (EventHandler<MouseEvent>) event -> {
-            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+            SoundPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
             selected = null;
             SpaceBox selected = (SpaceBox) event.getSource();
@@ -298,18 +297,23 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     public void move(Space origin, Space selected, User currentUser, int attackDropOff, int range) {
+        Stapel<Space> previousSelectables = gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber());
+
         int xDif = gameData.gameBoard.getDis(origin.x, selected.x);
         int yDif = gameData.gameBoard.getDis(origin.y, selected.y);
 
+        deselectActiveSelection(gameData.gameBoard.getBord()[origin.x][origin.y]);
+
         if (xDif < attackDropOff && yDif < attackDropOff) {
-            deselect(gameData.gameBoard.getBord()[origin.x][origin.y]);
             addPoint(1);
             shortRangeAttack(selected, currentUser);
         } else if (xDif < range && yDif < range) {
             longRangeAttack(origin, selected, currentUser);
-            deselect(gameData.gameBoard.getBord()[origin.x][origin.y]);
         }
 
+        removeSelectAble(previousSelectables);
+
+        endPlayerMove();
     }
 
     public void shortRangeAttack(Space select, User currentUser) {
@@ -323,8 +327,6 @@ public class GameController extends AbstractController implements Initializable 
 
         setColour(newSpace, currentUser.getPlayerColour());
         setSpaceLabel(currentUser.getPlayerNumber(), newSpace);
-
-        endPlayerMove();
     }
 
     public void longRangeAttack(Space origin, Space select, User currentUser) {
@@ -342,10 +344,7 @@ public class GameController extends AbstractController implements Initializable 
         setColour(newSpace, currentUser.getPlayerColour());
         setSpaceLabel(currentUser.getPlayerNumber(), newSpace);
 
-        removeColour(oldSpace);
         removeSpaceLabel(oldSpace);
-
-        endPlayerMove();
     }
 
     private void setInfected(Space select, int playerNumber) {
@@ -390,20 +389,6 @@ public class GameController extends AbstractController implements Initializable 
     private void updatePointLabel() {
         horizontalPlayerOneInfo.getScoreLabel().setText(String.valueOf(gameData.getPlayerOneScore()));
         horizontalPlayerTwoInfo.getScoreLabel().setText(String.valueOf(gameData.getPlayerTwoScore()));
-    }
-
-    // ----- configuring initial avatars -----
-
-    private void setAvatar(ImageView avatarView, Image image, Circle playerAvatarCircle, String colour) {
-        avatarView.setImage(image);
-
-        Circle circle = new Circle(avatarView.getBaselineOffset() / 2);
-        circle.setLayoutX(avatarView.getFitWidth() / 2);
-        circle.setLayoutY(avatarView.getFitHeight() / 2);
-
-        avatarView.setClip(circle);
-
-        playerAvatarCircle.setStyle("-fx-stroke: " + colour);
     }
 
     // ----- configuring initial board -----
@@ -564,11 +549,11 @@ public class GameController extends AbstractController implements Initializable 
     @FXML
     private void resetTurn() throws UnderflowException {
         if (!gameGeschiedenis.isEmpty()) {
-            AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+            SoundPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
             resetButtonBox.getChildren().clear();
 
-            deselectSelectAble(gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber()));
+            removeSelectAble(gameData.gameBoard.getPlayerMoves(gameData.currentPlayer.getPlayerNumber()));
 
             resetTwistedGame(gameGeschiedenis.pop());
         }
@@ -603,7 +588,7 @@ public class GameController extends AbstractController implements Initializable 
 
     @FXML
     private void endGameEvent() {
-        AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
+        SoundPlayer.playAudioFile(ButtonAudio.OK.getAudio());
 
         if(gameData.currentPlayer.getPlayerNumber() == 1){
             endGame(1,2);
@@ -614,46 +599,52 @@ public class GameController extends AbstractController implements Initializable 
 
     protected void endGame(int oldP, int newP) {
         if (gameData.getPlayerOneScore() > gameData.getPlayerTwoScore()) {
-            spelerEenWin();
+            user1Win();
         } else if (gameData.getPlayerTwoScore() > gameData.getPlayerOneScore()) {
-            spelerTweeWin();
+            user2Win();
         } else {
             if (gameData.gameBoard.checkBoard(newP)) {
                 if(oldP == 1){
-                    spelerEenWin();
+                    user1Win();
                 } else if(oldP == 2) {
-                    spelerTweeWin();
+                    user2Win();
                 }
             } else {
-                gelijkSpel();
+                draw();
             }
         }
     }
 
-    private void spelerEenWin(){
-        GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), GameOverType.P1, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    private void user1Win(){
+        GameOverController gameOverController = new GameOverController(
+                new GameOverData(GameOverType.P1, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber()),
+                this.gameMenuController);
+        this.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
     }
 
-    private void spelerTweeWin(){
-        GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), GameOverType.P2, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    private void user2Win(){
+        GameOverController gameOverController = new GameOverController(
+                new GameOverData(GameOverType.P2, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber()),
+                this.gameMenuController);
+        this.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
     }
 
-    private void gelijkSpel(){
-        GameOverController gameOverController = new GameOverController(gameData.getPlayer1(), gameData.getPlayer2(), GameOverType.DRAW, gameData.getPlayerOneScore(), gameData.getPlayerTwoScore());
-        JFXApplication.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+    private void draw(){
+        GameOverController gameOverController = new GameOverController(
+                new GameOverData(GameOverType.DRAW, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber()),
+                this.gameMenuController);
+        this.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
     }
 
 
     // ----- for adding sounds? -----
 
     private EventHandler<? super MouseEvent> select() {
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
+        return (EventHandler<MouseEvent>) event -> SoundPlayer.playAudioFile(ButtonAudio.SELECT.getAudio());
     }
 
     private EventHandler<? super MouseEvent> move() {
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.MOVE_AUDIO);
+        return (EventHandler<MouseEvent>) event -> SoundPlayer.playAudioFile(ButtonAudio.MOVE.getAudio());
     }
 }
 

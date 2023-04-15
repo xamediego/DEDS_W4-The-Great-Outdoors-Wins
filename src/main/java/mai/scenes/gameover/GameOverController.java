@@ -10,26 +10,25 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Circle;
-import mai.JFXApplication;
-import mai.audio.MenuAudio;
+import mai.audio.ButtonAudio;
+import mai.audio.Sound;
 import mai.data.User;
 import mai.enums.FXMLPart;
 import mai.enums.GameOverType;
 import mai.scenes.game.Parts.AvatarBox;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
-import mai.scenes.test.AbstractController;
-import mai.audio.AudioPlayer;
+import mai.scenes.abstractscene.AbstractController;
+import mai.audio.SoundPlayer;
+import mai.scenes.gamemenu.GameMenuController;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class GameOverController extends AbstractController implements Initializable {
 
-    private final User player1 , player2;
-    private final GameOverType gameOverType;
-
-    private final int player1Score, player2Score;
+    private final GameOverData gameOverData;
+    private final GameMenuController gameMenuController;
 
     @FXML
     private HBox avatarContainer;
@@ -52,30 +51,27 @@ public class GameOverController extends AbstractController implements Initializa
     @FXML
     private Button returnButton;
 
-    public GameOverController(User player1, User player2, GameOverType gameOverType, int player1Score, int player2Score) {
-        this.player1 = player1;
-        this.player2 = player2;
-        this.player1Score = player1Score;
-        this.player2Score = player2Score;
-        this.gameOverType = gameOverType;
+    public GameOverController(GameOverData gameOverData, GameMenuController gameMenuController) {
+        this.gameOverData = gameOverData;
+        this.gameMenuController = gameMenuController;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configButton();
 
-        if(gameOverType.equals(GameOverType.P1)){
-            setWinner(player1, String.valueOf(player1Score), "Has won with a score of:");
-        } else if(gameOverType.equals(GameOverType.P2)){
-            AudioPlayer.playAudioFile(MenuAudio.LOST);
-            setWinner(player2, String.valueOf(player2Score), "Has won with a score of:");
+        if(gameOverData.getGameOverType().equals(GameOverType.P1)){
+            setWinner(gameOverData.getUser1(), String.valueOf(gameOverData.getUser1Score()), "Has won with a score of:");
+        } else if(gameOverData.getGameOverType().equals(GameOverType.P2)){
+            SoundPlayer.playAudioFile(Sound.LOST.getAudio());
+            setWinner(gameOverData.getUser2(), String.valueOf(gameOverData.getUser2Score()), "Has won with a score of:");
         } else {
-            AudioPlayer.playAudioFile(MenuAudio.LOST);
+            SoundPlayer.playAudioFile(Sound.LOST.getAudio());
 
             User tempUser = new User();
             tempUser.setPlayerColour("WHITE");
             tempUser.setPlayerName("GOD WON");
-            tempUser.setProfilePictureUrl("Images/App/Thierry.png");
+            tempUser.setProfilePictureUrl("Images/App/Spurdo.png");
             setWinner(tempUser,"" ,"Draw, you both lost");
         }
 
@@ -101,13 +97,13 @@ public class GameOverController extends AbstractController implements Initializa
     }
 
     private EventHandler<? super MouseEvent> select(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
+        return (EventHandler<MouseEvent>) event -> SoundPlayer.playAudioFile(ButtonAudio.SELECT.getAudio());
     }
 
     @FXML
     private void returnToMain(){
-        AudioPlayer.playAudioFile(MenuAudio.OK_AUDIO);
-        JFXApplication.gameMenuController.setContent(new GameConfigScene(new GameConfigController(), FXMLPart.GAMECONFIG).getRoot());
+        SoundPlayer.playAudioFile(ButtonAudio.OK.getAudio());
+        this.gameMenuController.setContent(new GameConfigScene(new GameConfigController(this.gameMenuController), FXMLPart.GAMECONFIG).getRoot());
     }
 
 }

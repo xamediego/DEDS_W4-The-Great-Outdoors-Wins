@@ -1,7 +1,7 @@
 package mai.scenes.game.normalgame;
 
 import mai.enums.FXMLPart;
-import mai.scenes.test.AbstractScene;
+import mai.scenes.abstractscene.AbstractScene;
 
 public class GameScene extends AbstractScene<GameController> {
 

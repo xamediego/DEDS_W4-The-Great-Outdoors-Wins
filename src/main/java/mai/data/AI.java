@@ -2,11 +2,13 @@ package mai.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mai.enums.Difficulty;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @Data
 public class AI extends User{

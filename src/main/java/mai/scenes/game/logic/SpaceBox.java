@@ -18,7 +18,7 @@ public class SpaceBox extends HBox {
         this.setMaxSize(maxSize, maxSize);
 
         this.boxLabel = new Label();
-        this.boxLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 20");
+        this.boxLabel.setStyle("-fx-text-fill: WHITE; -fx-font-size: 15");
 //        this.boxLabel.setText("X: " + x + " | Y: " + y);
         Bloom bloom = new Bloom();
         bloom.setThreshold(.1);
@@ -32,4 +32,12 @@ public class SpaceBox extends HBox {
         boxLabel.setText(text);
     }
 
+    @Override
+    public String toString() {
+        return "SpaceBox{" +
+                "x=" + x +
+                ", y=" + y +
+                ", boxLabel=" + boxLabel +
+                '}';
+    }
 }

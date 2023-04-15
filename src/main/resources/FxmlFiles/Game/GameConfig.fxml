@@ -24,14 +24,14 @@
                         <VBox>
                            <children>
                               <Label text="Min Box Size" />
-                              <TextField fx:id="minSizeField" styleClass="inputField" />
+                              <TextField fx:id="minSizeField" onMouseClicked="#move" onMouseEntered="#select" styleClass="inputField" />
                            </children>
                         </VBox>
                         <VBox HBox.hgrow="ALWAYS" />
                         <VBox>
                            <children>
                               <Label text="Max Box Size" />
-                              <TextField fx:id="maxSizeField" styleClass="inputField" />
+                              <TextField fx:id="maxSizeField" onMouseClicked="#move" onMouseEntered="#select" styleClass="inputField" />
                            </children>
                         </VBox>
                      </children>
@@ -42,22 +42,22 @@
                <children>
                   <HBox>
                      <children>
-                        <Label text="X Groote  en Y Groote moet &gt;= 7 zijn " />
+                        <Label text="X Size and Y Size have to be &gt;= 7" />
                      </children>
                   </HBox>
                   <HBox alignment="CENTER" spacing="10.0">
                      <children>
                         <VBox>
                            <children>
-                              <Label text="X Groote" />
-                              <TextField styleClass="inputField" fx:id="xGroote" />
+                              <Label text="X Size" />
+                              <TextField onMouseClicked="#move" onMouseEntered="#select" styleClass="inputField" fx:id="xSize" />
                            </children>
                         </VBox>
                         <VBox HBox.hgrow="ALWAYS" />
                         <VBox>
                            <children>
-                              <Label text="Y Groote" />
-                              <TextField fx:id="yGroote" styleClass="inputField" />
+                              <Label text="Y Size" />
+                              <TextField fx:id="ySize" onMouseClicked="#move" onMouseEntered="#select" styleClass="inputField" />
                            </children>
                         </VBox>
                      </children>
@@ -71,14 +71,14 @@
                         <VBox prefHeight="52.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
                            <children>
                               <Label text="New Game!" />
-                              <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" prefHeight="35.0" prefWidth="100.0" styleClass="primaryButton" text="Start" />
+                              <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" onMouseClicked="#start" onMouseEntered="#select" prefHeight="35.0" prefWidth="100.0" styleClass="primaryButton" text="Start" />
                            </children>
                         </VBox>
                         <VBox HBox.hgrow="ALWAYS" />
                         <VBox HBox.hgrow="ALWAYS">
                            <children>
                               <Label text="Difficulty" />
-                              <ChoiceBox id="testChoice" fx:id="aITypes" prefHeight="35.0" prefWidth="150.0">
+                              <ChoiceBox id="testChoice" fx:id="aITypes" onMouseClicked="#move" onMouseEntered="#select" prefHeight="35.0" prefWidth="150.0">
                                  <VBox.margin>
                                     <Insets />
                                  </VBox.margin>
@@ -99,7 +99,7 @@
             </VBox>
             <HBox>
                <children>
-                  <Button fx:id="startButtonNonAI" mnemonicParsing="false" onAction="#starNonAIGame" prefHeight="25.0" prefWidth="118.0" styleClass="tertiaryMenuButton" text="Start non AI Game" />
+                  <Button fx:id="startButtonNonAI" mnemonicParsing="false" onAction="#starNonAIGame" onMouseClicked="#start" onMouseEntered="#select" prefHeight="25.0" prefWidth="118.0" styleClass="tertiaryMenuButton" text="Start non AI Game" />
                </children>
             </HBox>
          </children>

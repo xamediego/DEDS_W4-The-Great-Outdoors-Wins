@@ -1,18 +1,20 @@
 package mai.audio;
 
+import java.io.InputStream;
+
 public enum Sound {
 
     LOST{
-        public String getAudio(){
-            return "src/main/resources/Sounds/S_LOST.wav";
+        public InputStream getAudio(){
+            return getClass().getResourceAsStream("/Sounds/S_LOST.wav");
         }
     },
     SUMMON{
-        public String getAudio(){
-            return "src/main/resources/Sounds/S_SUMMON.wav";
+        public InputStream getAudio(){
+            return getClass().getResourceAsStream("/Sounds/S_SUMMON.wav");
         }
     };
 
-    public abstract String getAudio();
+    public abstract InputStream getAudio();
 
 }

@@ -1,19 +1,20 @@
 package mai.scenes.gameconfig;
 
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
-import mai.JFXApplication;
-import mai.audio.MenuAudio;
+import mai.audio.Music;
+import mai.audio.MusicPlayer;
+import mai.audio.SoundPlayer;
+import mai.audio.ButtonAudio;
 import mai.data.User;
 import mai.enums.Difficulty;
 import mai.enums.FXMLPart;
 import mai.parts.NumberField;
+import mai.scenes.abstractscene.AbstractController;
 import mai.scenes.game.aigame.AIGameController;
 import mai.scenes.game.aigame.AIGameScene;
 import mai.scenes.game.logic.GameBoard;
@@ -21,9 +22,8 @@ import mai.scenes.game.logic.GameData;
 import mai.scenes.game.logic.Space;
 import mai.scenes.game.normalgame.GameController;
 import mai.scenes.game.normalgame.GameScene;
-import mai.scenes.test.AbstractController;
+import mai.scenes.gamemenu.GameMenuController;
 import mai.service.AIService;
-import mai.audio.AudioPlayer;
 import mai.service.UserService;
 
 import java.net.URL;
@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class GameConfigController extends AbstractController implements Initializable {
+
+    private final GameMenuController gameMenuController;
 
     @FXML
     public Label gameInfo;
@@ -45,10 +47,10 @@ public class GameConfigController extends AbstractController implements Initiali
     private Button startButtonNonAI;
 
     @FXML
-    private TextField xGroote;
+    private TextField xSize;
 
     @FXML
-    private TextField yGroote;
+    private TextField ySize;
 
     @FXML
     private TextField minSizeField;
@@ -56,27 +58,33 @@ public class GameConfigController extends AbstractController implements Initiali
     @FXML
     private TextField maxSizeField;
 
+    MusicPlayer musicPlayer;
+
+    public GameConfigController(GameMenuController gameMenuController) {
+        this.gameMenuController = gameMenuController;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         configureChoiceBox();
-        configStartButton();
         configTextFields();
+        config_m();
+    }
 
-        if (UserService.user != null) {
-            gameInfo.setText("Game history will be recorded after the match");
-        } else {
-            gameInfo.setText("No game history will be recorded after the match\nPlease login if you want your game history to be recorded");
-        }
+    private void config_m(){
+        musicPlayer = new MusicPlayer();
+        musicPlayer.setMusic(Music.CONFIG.getAudio());
+        musicPlayer.loopMusic();
     }
 
     private void configTextFields(){
-        NumberField.makeNumberField(xGroote, "([\\d])*?");
-        xGroote.setText("7");
-        configAmountField(xGroote);
+        NumberField.makeNumberField(xSize, "([\\d])*?");
+        xSize.setText("7");
+        configAmountField(xSize);
 
-        NumberField.makeNumberField(yGroote, "([\\d])*?");
-        yGroote.setText("7");
-        configAmountField(yGroote);
+        NumberField.makeNumberField(ySize, "([\\d])*?");
+        ySize.setText("7");
+        configAmountField(ySize);
 
         NumberField.makeNumberField(minSizeField, "([\\d])*?");
         minSizeField.setText("50");
@@ -99,102 +107,99 @@ public class GameConfigController extends AbstractController implements Initiali
 
     @FXML
     private void configureChoiceBox() {
-        List<Difficulty> DIFFICULTIES = List.of(Difficulty.values());
+        List<Difficulty> Difficulties = List.of(Difficulty.values());
 
-        aITypes.getItems().addAll(DIFFICULTIES);
+        aITypes.getItems().addAll(Difficulties);
         aITypes.getSelectionModel().selectFirst();
-
-        aITypes.setOnMouseEntered(select());
-        aITypes.setOnMouseClicked(move());
     }
 
     @FXML
     private void startGame() {
-        AudioPlayer.playAudioFile(MenuAudio.START_AUDIO);
-
-
+        musicPlayer.stopMusic();
 
         int minSize = Integer.parseInt(minSizeField.getText());
         int maxSize = Integer.parseInt(maxSizeField.getText());
 
-        GameBoard gameBord = getNewBoard();
+        GameBoard gameBoard = getNewBoard();
 
         if (UserService.user != null) {
-            GameData gameData = getGameData(UserService.user, gameBord);
+            GameData gameData = getGameData(UserService.user, gameBoard);
 
-            AIGameController aiGameController = new AIGameController(gameData, minSize, maxSize);
-            JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
+            AIGameController aiGameController = new AIGameController(gameData, minSize, maxSize, gameMenuController);
+            this.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         } else {
-            User tempSpeler = getTempSpeler();
-            GameData gameData = getGameData(tempSpeler, gameBord);
+            User tempUser = getTempUser();
+            GameData gameData = getGameData(tempUser, gameBoard);
 
-            AIGameController aiGameController = new AIGameController(gameData, minSize, maxSize);
-            JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
+            AIGameController aiGameController = new AIGameController(gameData, minSize, maxSize, gameMenuController);
+            this.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         }
     }
 
     @FXML
     private void starNonAIGame(){
-        AudioPlayer.playAudioFile(MenuAudio.START_AUDIO);
+        musicPlayer.stopMusic();
 
         int minSize = Integer.parseInt(minSizeField.getText());
         int maxSize = Integer.parseInt(maxSizeField.getText());
 
-
-        GameBoard gameBord = getNewBoard();
+        GameBoard gameBoard = getNewBoard();
 
         if (UserService.user != null) {
-            GameData gameData = getGameData(UserService.user, gameBord);
+            GameData gameData = getGameData(UserService.user, gameBoard);
 
-            AIGameController aiGameController = new AIGameController(gameData, minSize, maxSize);
-            JFXApplication.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
+            AIGameController aiGameController = new AIGameController(gameData, minSize, maxSize, gameMenuController);
+            this.gameMenuController.setContent(new AIGameScene(aiGameController, FXMLPart.GAME).getRoot());
         } else {
-            User tempSpeler = getTempSpeler();
-            GameData gameData = getGameData(tempSpeler, gameBord);
+            User tempUser = getTempUser();
+            GameData gameData = getGameData(tempUser, gameBoard);
 
-            GameController gameController = new GameController(gameData, minSize, maxSize);
-            JFXApplication.gameMenuController.setContent(new GameScene(gameController, FXMLPart.GAME).getRoot());
+            GameController gameController = new GameController(gameData, minSize, maxSize, gameMenuController);
+            this.gameMenuController.setContent(new GameScene(gameController, FXMLPart.GAME).getRoot());
         }
     }
 
     private GameBoard getNewBoard(){
-        int xGrooteBord = Integer.parseInt(xGroote.getText());
-        int yGrooteBord = Integer.parseInt(yGroote.getText());
+        int xGrooteBord = Integer.parseInt(xSize.getText());
+        int yGrooteBord = Integer.parseInt(ySize.getText());
 
-        GameBoard gameBord = new GameBoard(xGrooteBord, yGrooteBord, new Space[xGrooteBord][yGrooteBord]);
-        gameBord.configBoard();
+        GameBoard gameBoard = new GameBoard(xGrooteBord, yGrooteBord, new Space[xGrooteBord][yGrooteBord]);
+        gameBoard.configBoard();
 
-        return gameBord;
+        return gameBoard;
     }
 
-    private User getTempSpeler(){
-        User tempSpeler = new User();
+    private User getTempUser(){
+        User tempUser = new User();
 
-        tempSpeler.setPlayerName("Anon");
-        tempSpeler.setPlayerColour("#5ef77f");
-        tempSpeler.setProfilePictureUrl("/images/app/defaultProfImage.png");
+        tempUser.setPlayerName("Anon");
+        tempUser.setPlayerColour("#5ef77f");
+        tempUser.setProfilePictureUrl("/images/app/defaultProfImage.png");
 
-        tempSpeler.setPlayerNumber(1);
-        tempSpeler.setAttackDropOff(2);
-        tempSpeler.setRange(3);
+        tempUser.setPlayerNumber(1);
+        tempUser.setAttackDropOff(2);
+        tempUser.setRange(3);
 
-        return tempSpeler;
+        return tempUser;
     }
 
-    private GameData getGameData(User speler, GameBoard gameBoard){
-        return new GameData(4, 4, 1, speler, AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
+    private GameData getGameData(User user, GameBoard gameBoard){
+        return new GameData(4, 4, 1, user, AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
     }
 
-    private void configStartButton(){
-        startButton.setOnMouseEntered(select());
+    @FXML
+    private void select(){
+        SoundPlayer.playAudioFile(ButtonAudio.SELECT.getAudio());
     }
 
-    private EventHandler<? super MouseEvent> select(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.SELECT_AUDIO);
+    @FXML
+    private void start(){
+        SoundPlayer.playAudioFile(ButtonAudio.START.getAudio());
     }
 
-    private EventHandler<? super MouseEvent> move(){
-        return (EventHandler<MouseEvent>) event -> AudioPlayer.playAudioFile(MenuAudio.MOVE_AUDIO);
+    @FXML
+    private void move(){
+        SoundPlayer.playAudioFile(ButtonAudio.MOVE.getAudio());
     }
 
 

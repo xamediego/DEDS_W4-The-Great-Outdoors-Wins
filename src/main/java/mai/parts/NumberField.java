@@ -6,12 +6,6 @@ import javafx.util.converter.IntegerStringConverter;
 
 import java.util.function.UnaryOperator;
 
-
-/*
-    Creates a number field from a textfield if a correct regex is used
-    apparently can't just create a class and extend textfield because javafx is garbage
- */
-
 public class NumberField {
 
     public static TextField makeNumberField(TextField textField, String regex) {

@@ -4,14 +4,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
-import mai.data.User;
 import mai.enums.FXMLPart;
 import mai.scenes.gameconfig.GameConfigController;
 import mai.scenes.gameconfig.GameConfigScene;
-import mai.scenes.test.AbstractController;
+import mai.scenes.abstractscene.AbstractController;
 
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class GameMenuController extends AbstractController implements Initializable {
@@ -21,7 +19,7 @@ public class GameMenuController extends AbstractController implements Initializa
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        setContent(new GameConfigScene( new GameConfigController(), FXMLPart.GAMECONFIG).getRoot());
+        setContent(new GameConfigScene( new GameConfigController(this), FXMLPart.GAMECONFIG).getRoot());
     }
 
     public void setContent(Node root) {

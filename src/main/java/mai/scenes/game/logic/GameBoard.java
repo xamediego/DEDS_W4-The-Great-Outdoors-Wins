@@ -29,7 +29,7 @@ public class GameBoard {
 
     public void setInitialOccupied(int startingSize) {
         if (startingSize * 2 > yGroote || startingSize * 2 > xGroote) {
-            //throw error?
+            //throw error because starting size is larger than board size?
         } else {
             cornerOne(startingSize);
             cornerTwo(startingSize);

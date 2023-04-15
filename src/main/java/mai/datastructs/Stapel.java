@@ -49,6 +49,23 @@ public class Stapel<T> {
         return top.value;
     }
 
+    public T get(int index) throws IndexOutOfBoundsException {
+        if (index >= getSize()) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        Node<T> returnNode = top;
+
+        while (index > 0){
+            returnNode = returnNode.prev;
+
+            index--;
+        }
+
+        return returnNode.value;
+    }
+
+
     public boolean contains(T value){
         Node<T> compareNode = top;
 

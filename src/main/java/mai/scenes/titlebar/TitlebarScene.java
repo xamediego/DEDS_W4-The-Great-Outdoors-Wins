@@ -1,7 +1,7 @@
 package mai.scenes.titlebar;
 
 import mai.enums.FXMLPart;
-import mai.scenes.test.AbstractScene;
+import mai.scenes.abstractscene.AbstractScene;
 
 public class TitlebarScene extends AbstractScene<TitlebarController> {
 

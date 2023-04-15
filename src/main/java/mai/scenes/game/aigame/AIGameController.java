@@ -3,6 +3,7 @@ package mai.scenes.game.aigame;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.logic.GameData;
 import mai.scenes.game.normalgame.GameController;
+import mai.scenes.gamemenu.GameMenuController;
 
 import java.util.Random;
 
@@ -10,14 +11,12 @@ public class AIGameController extends GameController {
 
     private final AILogic aiLogic = new AILogic();
 
-    public AIGameController(GameData gameData, int spaceMinSize, int spaceMaxSize) {
-        super(gameData, spaceMinSize, spaceMaxSize);
+    public AIGameController(GameData gameData, int spaceMinSize, int spaceMaxSize, GameMenuController gameMenuController) {
+        super(gameData, spaceMinSize, spaceMaxSize, gameMenuController);
     }
 
     @Override
     public void endPlayerMove() {
-        removeSelectAble(gameData.currentPlayer.getPlayerNumber());
-
         int oldP, newP;
 
         if (gameData.currentPlayer.getPlayerNumber() == 1) {
@@ -74,7 +73,7 @@ public class AIGameController extends GameController {
 
             setCurrentPlayer();
 
-            AIMove aiMove = aiLogic.makeMove(this.gameData.gameBoard, gameData.getPlayer2(), 2, 1);
+            AIMove aiMove = aiLogic.makeMove(this.gameData.gameBoard, gameData.getPlayer2(), 2);
 
             move(aiMove.getOrigin(), aiMove.getSelected(), gameData.getPlayer2(), gameData.getPlayer2().getRange(), gameData.getPlayer2().getAttackDropOff());
         } catch (UnderflowException e) {

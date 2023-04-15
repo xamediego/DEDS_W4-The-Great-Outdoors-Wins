@@ -14,68 +14,23 @@ import static mai.scenes.game.aigame.EasyAI.*;
 
 public class AILogic {
 
-    public AIMove makeMove(GameBoard gameBoard, AI aiPlayer, int aiNumber, int opponentNumber) throws UnderflowException {
+    public AIMove makeMove(GameBoard gameBoard, AI aiPlayer, int aiNumber) throws UnderflowException {
         Stapel<Space> selectAble = gameBoard.getPlayerMoves(aiNumber);
 
-        if (aiPlayer.getAiTypes().contains(Difficulty.NORMAL)) {
-            return EasyAI.makeEasyMove(selectAble, gameBoard, aiNumber, opponentNumber, aiPlayer);
-        } else if (aiPlayer.getAiTypes().contains(Difficulty.EASY)) {
-            return EasyAI.makeEasyMove(selectAble, gameBoard, aiNumber, opponentNumber, aiPlayer);
+        if (aiPlayer.getAiTypes().contains(Difficulty.NORMAL) || aiPlayer.getAiTypes().contains(Difficulty.EASY)) {
+            return EasyAI.makeEasyMove(selectAble, gameBoard, aiNumber, aiPlayer);
         } else {
             return RandomAI.makeRandomMove(selectAble, gameBoard, aiPlayer);
         }
     }
 }
 
-class NormalAI {
-    public static AIMove makeEasyMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
-        return selectMostPointMove(selectAble, gameBoard, aiNumber, opponentNumber, ai);
-    }
-
-    public static AIMove selectMostPointMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
-        Stapel<Space> possibleLoses = new Stapel<>();
-
-        Stapel<Space> possiblePlayerOneMove = gameBoard.getPlayerMoves(opponentNumber);
-
-        int s = selectAble.getSize();
-
-        for (int i = 0; i < s; i++) {
-            try {
-                if (!possiblePlayerOneMove.isEmpty()) {
-                    Stapel<Space> playerMoveSquare = gameBoard.getInfected(possiblePlayerOneMove.pop(), opponentNumber);
-
-                    while (!playerMoveSquare.isEmpty()) {
-                        Space possibleAttack = playerMoveSquare.pop();
-                        if (possibleAttack.getPlayerNumber() == 2 && !possibleLoses.contains(possibleAttack)) {
-                            possibleLoses.push(possibleAttack);
-                        }
-
-                    }
-                }
-            } catch (UnderflowException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (possibleLoses.getSize() - gameBoard.getPlayerSpaceCount(2) < 1) {
-            return getMostValueAttack(selectAble, gameBoard, aiNumber, ai);
-        } else {
-            return getMostValueAttack(selectAble, gameBoard, aiNumber, ai);
-        }
-    }
-
-    private static int hVal;
-
-
-
-}
-
 class EasyAI {
-    public static AIMove makeEasyMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
-        return selectMostPointMove(selectAble, gameBoard, aiNumber, opponentNumber, ai);
+    public static AIMove makeEasyMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, AI ai) {
+        return selectMostPointMove(selectAble, gameBoard, aiNumber, ai);
     }
 
-    public static AIMove selectMostPointMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, int opponentNumber, AI ai) {
+    public static AIMove selectMostPointMove(Stapel<Space> selectAble, GameBoard gameBoard, int aiNumber, AI ai) {
         return getMostValueAttack(selectAble, gameBoard, aiNumber, ai);
     }
 
@@ -135,7 +90,6 @@ class EasyAI {
         Random random = new Random();
 
         AIMove aiMove = null;
-        System.out.println("M: " + moves.getSize());
 
         try {
             aiMove = moves.peek();
