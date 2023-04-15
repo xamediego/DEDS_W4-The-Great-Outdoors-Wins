@@ -1,1 +1,2 @@
-# Small game created in JavaFX for a school assignement
+# DedsGame
+Small game created in JavaFX for a school assignement
