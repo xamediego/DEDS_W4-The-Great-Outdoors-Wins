@@ -16,15 +16,12 @@ import mai.audio.Sound;
 import mai.data.User;
 import mai.datastructs.Stapel;
 import mai.enums.ButtonType;
-import mai.enums.FXMLPart;
 import mai.enums.GameOverType;
 import mai.exceptions.UnderflowException;
 import mai.scenes.game.Parts.UserInfoBox;
 import mai.scenes.game.logic.*;
 import mai.scenes.gamemenu.GameMenuController;
-import mai.scenes.gameover.GameOverController;
 import mai.scenes.gameover.GameOverData;
-import mai.scenes.gameover.GameOverScene;
 import mai.scenes.abstractscene.AbstractController;
 import mai.audio.SoundPlayer;
 
@@ -79,7 +76,6 @@ public class GameController extends AbstractController implements Initializable 
     private VBox HorizontalPlayerTwoInfoContainer;
 
     private final GameMenuController gameMenuController;
-
 
     public GameController(GameData gameData, int spaceMinSize, int spaceMaxSize, GameMenuController gameMenuController) {
         this.gameData = gameData;
@@ -616,24 +612,18 @@ public class GameController extends AbstractController implements Initializable 
     }
 
     private void user1Win(){
-        GameOverController gameOverController = new GameOverController(
-                new GameOverData(GameOverType.P1, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber()),
-                this.gameMenuController);
-        this.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+        GameOverData gameOverData = new GameOverData(GameOverType.P1, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber());
+        this.gameMenuController.setGameOverScreen(gameOverData);
     }
 
     private void user2Win(){
-        GameOverController gameOverController = new GameOverController(
-                new GameOverData(GameOverType.P2, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber()),
-                this.gameMenuController);
-        this.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+        GameOverData gameOverData = new GameOverData(GameOverType.P2, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber());
+        this.gameMenuController.setGameOverScreen(gameOverData);
     }
 
     private void draw(){
-        GameOverController gameOverController = new GameOverController(
-                new GameOverData(GameOverType.DRAW, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber()),
-                this.gameMenuController);
-        this.gameMenuController.setContent(new GameOverScene(gameOverController, FXMLPart.GAMEOVER).getRoot());
+        GameOverData gameOverData = new GameOverData(GameOverType.DRAW, gameData.getPlayer1(), gameData.getPlayer2(), gameData.getPlayerOneScore(), gameData.getPlayerTwoScore(), gameData.getTurnNumber());
+        this.gameMenuController.setGameOverScreen(gameOverData);
     }
 
 
@@ -646,6 +636,7 @@ public class GameController extends AbstractController implements Initializable 
     private EventHandler<? super MouseEvent> move() {
         return (EventHandler<MouseEvent>) event -> SoundPlayer.playAudioFile(ButtonAudio.MOVE.getAudio());
     }
+
 }
 
 

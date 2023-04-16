@@ -27,4 +27,7 @@ public abstract class AbstractScene<T extends AbstractController> {
         return this.root;
     }
 
+    public void setController(T controller) {
+        this.controller = controller;
+    }
 }

@@ -103,7 +103,7 @@ public class GameOverController extends AbstractController implements Initializa
     @FXML
     private void returnToMain(){
         SoundPlayer.playAudioFile(ButtonAudio.OK.getAudio());
-        this.gameMenuController.setContent(new GameConfigScene(new GameConfigController(this.gameMenuController), FXMLPart.GAMECONFIG).getRoot());
+        this.gameMenuController.setGameConfigScreen();
     }
 
 }
