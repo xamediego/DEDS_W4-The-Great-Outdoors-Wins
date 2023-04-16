@@ -17,7 +17,6 @@
 }
 
 .confirmBox {
-    -fx-background-radius: 10;
     -fx-background-color: #2e2d2d;
 }
 
@@ -28,7 +27,6 @@
 
     -fx-text-fill: #ffffff;
     -fx-background-color: #5581d5;
-    -fx-background-radius: 6px;
 }
 
 .primaryButton:hover {
@@ -41,12 +39,9 @@
 .tertiaryCancelButton {
     -fx-text-fill: #ffffff;
     -fx-background-color: TRANSPARENT;
-    -fx-background-radius: 6px;
 
     -fx-border-width: 1 1 1 1;
     -fx-border-color: RED;
-
-    -fx-border-radius: 6px;
 }
 
 .tertiaryCancelButton:hover {
@@ -61,11 +56,9 @@
 
     -fx-text-fill: #ffffff;
     -fx-background-color: #f33737;
-    -fx-background-radius: 6px;
 
     -fx-border-width: 1 1 1 1;
     -fx-border-color: RED;
-    -fx-border-radius: 6px;
 }
 
 .cancelButton:hover {
@@ -77,7 +70,6 @@
 .menuButton {
     -fx-text-fill: #ffffff;
     -fx-background-color: #242526;
-    -fx-background-radius: 6px;
 }
 
 .menuButton:hover {
@@ -88,12 +80,9 @@
 .tertiaryMenuButton {
     -fx-text-fill: #ffffff;
     -fx-background-color: TRANSPARENT;
-    -fx-background-radius: 6px;
 
     -fx-border-width: 1 1 1 1;
     -fx-border-color: #242526;
-
-    -fx-border-radius: 6px;
 }
 
 .tertiaryMenuButton:hover {
@@ -106,7 +95,6 @@
 
 .inputField {
     -fx-background-color: #202226;
-    -fx-background-radius: 4;
 
     -fx-text-fill: #d5cbcb;
 
@@ -139,35 +127,33 @@
 
 /*Choice Box Styling*/
 
-.choice-box {
+.combo-box {
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0.2, 0.2, 0.2);
-
     -fx-background-color: #202226;
-    -fx-background-radius: 8;
 }
 
-.choice-box:hover {
+.combo-box:hover {
     -fx-opacity: 0.8;
+    -fx-background-color: #080809;
     -fx-cursor: hand;
 }
 
-.choice-box .context-menu {
+.combo-box .list-cell {
     -fx-background-color: #2f3137;
+
+    -fx-text-fill: white;
 }
 
-.choice-box .menu-item:focused {
-    -fx-background-color: #2f3137;
+.combo-box .list-cell:hover {
     -fx-opacity: 0.8;
+    -fx-background-color: #26272c;
+
     -fx-cursor: hand;
-
-}
-
-.choice-box .menu-item > .label {
     -fx-text-fill: white;
 }
 
-.choice-box .menu-item:focused > .label {
-    -fx-text-fill: white;
+.combo-box .list-view {
+    -fx-background-color: #18191c;
 }
 
 /*Scroll pane Styling*/

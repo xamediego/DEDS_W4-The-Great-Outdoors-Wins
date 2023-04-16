@@ -1,13 +1,6 @@
-.gameBoard {
-    -fx-background-radius: 8px;
-}
-
 .bordColumnBox{
-    -fx-background-radius: 4px;
-
     -fx-border-width: 2 2 2 2;
     -fx-border-color: #242526;
-    -fx-border-radius: 4px;
 }
 
 .spaceSelect:hover {

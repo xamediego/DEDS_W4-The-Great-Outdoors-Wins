@@ -1,11 +1,11 @@
 package mai.scenes.gameconfig;
 
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import mai.audio.Music;
 import mai.audio.MusicPlayer;
 import mai.audio.SoundPlayer;
@@ -25,6 +25,7 @@ import mai.service.UserService;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class GameConfigController extends AbstractController implements Initializable {
 
@@ -34,7 +35,7 @@ public class GameConfigController extends AbstractController implements Initiali
     public Label gameInfo;
 
     @FXML
-    private ChoiceBox<Difficulty> aITypes;
+    private ComboBox<Difficulty> aITypes;
 
     @FXML
     private Button startButton;
@@ -102,9 +103,25 @@ public class GameConfigController extends AbstractController implements Initiali
 
     @FXML
     private void configureChoiceBox() {
-        List<Difficulty> Difficulties = List.of(Difficulty.values());
+        List<Difficulty> difficulties = List.of(Difficulty.values());
+        aITypes.getItems().addAll(difficulties);
 
-        aITypes.getItems().addAll(Difficulties);
+        aITypes.setCellFactory(lv -> {
+            ListCell<Difficulty> cell = new ListCell<>() {
+                @Override
+                protected void updateItem(Difficulty item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (item != null){
+                        setText(item.name());
+                    }
+                }
+            };
+
+            cell.setOnMouseEntered(event -> SoundPlayer.playAudioFile(ButtonAudio.MOVE.getAudio()));
+
+            return cell;
+        });
+
         aITypes.getSelectionModel().selectFirst();
     }
 
@@ -168,7 +185,7 @@ public class GameConfigController extends AbstractController implements Initiali
     }
 
     private GameData getGameData(User user, GameBoard gameBoard) {
-        return new GameData(4, 4, 1, user, AIService.getAiPlayer(aITypes.getValue(), 2), gameBoard);
+        return new GameData(4, 4, 1, user, AIService.getAiPlayer(aITypes.getValue() , 2), gameBoard);
     }
 
     @FXML
