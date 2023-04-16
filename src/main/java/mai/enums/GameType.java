@@ -1,4 +1,4 @@
-package mai.scenes.gameconfig;
+package mai.enums;
 
 public enum GameType {
     AI, NON_AI

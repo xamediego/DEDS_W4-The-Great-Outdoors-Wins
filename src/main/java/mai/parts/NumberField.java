@@ -8,7 +8,7 @@ import java.util.function.UnaryOperator;
 
 public class NumberField {
 
-    public static TextField makeNumberField(TextField textField, String regex) {
+    public static void makeNumberField(TextField textField, String regex) {
         UnaryOperator<TextFormatter.Change> integerFilter = change -> {
             String newText = change.getControlNewText();
             if (newText.matches(regex)) {
@@ -19,8 +19,6 @@ public class NumberField {
 
         textField.setTextFormatter(
                 new TextFormatter<>(new IntegerStringConverter(), 0, integerFilter));
-
-        return textField;
     }
 
 }

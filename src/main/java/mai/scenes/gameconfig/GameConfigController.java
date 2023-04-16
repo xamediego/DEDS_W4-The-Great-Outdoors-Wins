@@ -12,6 +12,7 @@ import mai.audio.SoundPlayer;
 import mai.audio.ButtonAudio;
 import mai.data.User;
 import mai.enums.Difficulty;
+import mai.enums.GameType;
 import mai.parts.NumberField;
 import mai.scenes.abstractscene.AbstractController;
 import mai.scenes.game.logic.GameBoard;
